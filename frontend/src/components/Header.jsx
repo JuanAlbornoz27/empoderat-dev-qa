@@ -15,14 +15,12 @@ const Header = ({ isLoggedIn, isAdmin }) => {
     return (
         <header className="header">
             <div className="header-main">
-                {/* Logo a la izquierda */}
                 <div className="logo-container">
                     <Link to="/">
                         <img src={logo} alt="EmpoderaT Logo" className="logo" />
                     </Link>
                 </div>
 
-                {/* Navegación y botones a la derecha */}
                 <div className="right-container">
                     <Navigation isLoggedIn={isLoggedIn} />
                     <div className="auth-actions">

@@ -2,11 +2,11 @@
     height: 80px;
     background-color: white;
     box-shadow: var(--shadow);
-    position: fixed; /* Hace que el header sea fijo */
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000; /* Asegura que el header esté por encima de otros elementos */
+    z-index: 1000; 
 }
 
 .header-main {
@@ -44,7 +44,7 @@
     display: flex;
     align-items: center;
     gap: 20px;
-        background: transparent; /* Asegurar que el menú también sea transparente */
+        background: transparent; 
 
 }
 
@@ -98,7 +98,7 @@
     font-weight: 600;
     transition: all 0.3s;
     margin-left: 0;
-    /* Asegura que el botón esté alineado a la izquierda */
+ 
 
 }
 

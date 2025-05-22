@@ -91,9 +91,7 @@
   color: var(--primary-color);
 }
 
-/* Additional styles to match your mockups */
 
-/* For responsive design */
 @media (max-width: 1024px) {
   .courses-container {
     grid-template-columns: repeat(3, 1fr);
@@ -104,12 +102,12 @@
   .courses-container {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .dashboard-nav {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .dashboard-nav ul {
     flex-wrap: wrap;
     justify-content: center;
@@ -120,7 +118,7 @@
   .courses-container {
     grid-template-columns: 1fr;
   }
-  
+
   .auth-container {
     padding: 1.5rem;
   }

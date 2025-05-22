@@ -32,7 +32,6 @@ button {
     font-weight: 600;
 }
 
-/* Common button styles */
 .button-primary {
     background-color: var(--primary-color);
     color: white;
@@ -57,7 +56,6 @@ button {
     background-color: #dddbed;
 }
 
-/* Container styles */
 .container {
     max-width: 1200px;
     margin: 0 auto;
