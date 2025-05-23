@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.perfil-container {
+  background-color: #f1f0ff;
+  padding: 1.25rem;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.perfil-card {
+  background-color: white;
+  border-radius: 2rem;
+  padding: 3rem;
+  max-width: 57%;
+  width: 95%;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.perfil-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.perfil-avatar {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 50%;
+  background-color: #3a0075;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  border: 0.25rem solid #3E0862;
+}
+
+.perfil-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-default {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-edit-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #3a0075;
+  border-radius: 50%;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.1875rem solid white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.avatar-edit-overlay:hover {
+  background-color: #7922d1;
+  transform: translateX(-50%) scale(1.05);
+}
+
+.avatar-edit-btn {
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.perfil-nombre-completo {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #3a0075;
+  text-align: center;
+  margin: 0;
+}
+
+.perfil-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 2.5rem;
+}
+
+.campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.campo-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  margin: 0;
+}
+
+.campo-valor {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  color: #1d1d1d;
+  padding: 0.75rem 0;
+  border-bottom: 0.0625rem solid #e0e0e0;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.campo-input {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  color: #1d1d1d;
+  padding: 0.75rem 1rem;
+  border: 0.125rem solid #3E0862;
+  border-radius: 0.5rem;
+  background-color: white;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.campo-input:focus {
+  border-color: #7922d1;
+  box-shadow: 0 0 0 0.1875rem rgba(121, 34, 209, 0.1);
+}
+
+.perfil-acciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-editar {
+  background-color: #3a0075;
+  color: white;
+  border: none;
+  padding: 0.875rem 2.5rem;
+  border-radius: 1.875rem;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.btn-editar:hover {
+  background-color: #7922d1;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(58, 0, 117, 0.3);
+}
+
+.acciones-edicion {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-cancelar {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 1.875rem;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.btn-cancelar:hover {
+  background-color: #5a6268;
+  transform: translateY(-0.125rem);
+}
+
+.btn-guardar {
+  background-color: #3a0075;
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 1.875rem;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.btn-guardar:hover {
+  background-color: #7922d1;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(58, 0, 117, 0.3);
+}
+
+.btn-editar:focus,
+.btn-cancelar:focus,
+.btn-guardar:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.1875rem rgba(58, 0, 117, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 48rem) {
+  .perfil-card {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+    border-radius: 1.5rem;
+  }
+  
+  .perfil-avatar {
+    width: 6.25rem;
+    height: 6.25rem;
+  }
+  
+  .perfil-nombre-completo {
+    font-size: 1.5rem;
+  }
+  
+  .perfil-datos {
+    gap: 1.25rem;
+  }
+  
+  .acciones-edicion {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-cancelar,
+  .btn-guardar {
+    width: 100%;
+    padding: 1rem;
+  }
+  
+  .btn-editar {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+}
+
+@media (max-width: 30rem) {
+  .perfil-container {
+    padding: 0.5rem;
+  }
+  
+  .perfil-card {
+    padding: 1.5rem 1rem;
+  }
+  
+  .perfil-avatar {
+    width: 5rem;
+    height: 5rem;
+  }
+  
+  .avatar-edit-overlay {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
+  .perfil-nombre-completo {
+    font-size: 1.3rem;
+  }
+}

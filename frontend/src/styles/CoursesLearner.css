@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+
+.cursos-container {
+  background-color: #f1f0ff;
+  padding: 1.25rem;
+}
+
+.cursos-titulo, .busqueda-texto {
+    font-family: 'Poppins', sans-serif;
+}
+
+.cursos-titulo {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.875rem;
+  color: #1d1d1d;
+}
+
+.busqueda-container {
+  max-width: 62.5rem;
+  margin: 0 auto 1.875rem;
+}
+
+.busqueda-texto {
+  font-size: 1rem;
+  margin-bottom: 0.9375rem;
+  color: #815896;
+}
+
+.busqueda-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.busqueda-input {
+  width: 100%;
+  padding: 0.9375rem 3.125rem 0.9375rem 3.25rem;
+  border-radius: 0.5rem;
+  border: 0.2rem solid #3E0862;
+  font-size: 1rem;
+  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.05);
+  background-color: white;
+  color: black;
+  outline:none
+}
+
+.busqueda-icono {
+  position: absolute;
+  left: 0.9375rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #3E0862;
+}
+
+.cursos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5625rem;
+  max-width: 62.5rem;
+  margin: 0 auto;
+}
+
+.curso-card {
+  display: flex;
+  background-color: white;
+  border-radius: 2rem;
+  overflow: hidden;
+  height: 10rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15); 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.curso-card:hover {
+  transform: translateY(-0.1875rem);
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.curso-imagen {
+  width: 25rem;       
+  height: 7rem;       
+  background-color: #5d5d5f;  
+  margin: 4rem 0 4rem 4rem;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  align-self: center;
+  border: 0.1rem solid #3E0862; /* Borde morado que coincide con el color del botón */
+}
+
+.curso-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.curso-info {
+  padding: 1.25rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row; /* Cambiado de column a row */
+  align-items: center; /* Centra los elementos verticalmente */
+  justify-content: space-between; /* Distribuye espacio entre el contenido y el botón */
+  position: relative;
+}
+
+.curso-info-texto {
+  flex: 1; /* Reducido de 1 para dar más espacio al botón */
+  display: flex;
+  flex-direction: column;
+  padding-right: 1rem; /* Aumentado de 1rem para más separación */
+}
+
+h2, p {
+    font-family: 'Poppins', sans-serif;
+}
+
+.curso-nombre {
+  margin: 0 0 0.1rem 0;
+  font-size: 1.2rem;
+  color: #000000;
+  font-weight: 600;
+}
+
+.curso-duracion {
+  color: #3E0862;
+  margin: 0 0 0.4rem 0;
+}
+
+.curso-descripcion {
+  color: #272727;
+  line-height: 1.4; 
+  max-width: 90%; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  display: -webkit-box;
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical;
+  margin-bottom: 0.5rem; 
+}
+
+.curso-duracion, .curso-descripcion {
+  font-size: 0.8rem;
+}
+
+.curso-inscribirse {
+  background-color: #3a0075;
+  color: white;
+  border: none;
+  padding: 0.625rem 1.5625rem;
+  border-radius: 1.875rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+  align-self: center; 
+  white-space: nowrap; 
+  outline: none;
+  margin-right: 2.3rem;
+}
+
+.curso-inscribirse:focus, 
+.curso-inscribirse:active {
+  outline: none;
+  border: none;
+  box-shadow: none; /* Algunos navegadores pueden usar sombras como sustituto del outline */
+}
+
+.curso-inscribirse:hover {
+  background-color: #7922d1;
+}
+
+@media (max-width: 48rem) {
+  .curso-card {
+    flex-direction: column;
+  }
+  
+  .curso-imagen {
+    width: 100%;
+    height: 12.5rem;
+  }
+  
+  .curso-inscribirse {
+    align-self: center;
+    width: 100%;
+  }
+}
