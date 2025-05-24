@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import Header from '../components/HeaderAdmin';
 import '../styles/ModuleManagement.css';
 // IMPORTAR LOS DATOS MOCK
 import { mockCourses } from '../data/mockCourses';

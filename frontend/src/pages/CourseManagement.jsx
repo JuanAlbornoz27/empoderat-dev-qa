@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { courseService, categoryService } from '../services/api';
-import Header from '../components/Header';
+import Header from '../components/HeaderAdmin';
 import '../styles/CourseManagement.css';
 // IMPORTAR LOS DATOS MOCK
 import { mockCourses } from '../data/mockCourses';

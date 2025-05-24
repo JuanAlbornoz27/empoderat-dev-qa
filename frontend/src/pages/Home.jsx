@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Header from '../components/Header';
+import Header from '../components/HeaderAdmin';
 import CourseCard from '../components/CourseCard';
 import { courseService } from '../services/api';
 import '../styles/Home.css';

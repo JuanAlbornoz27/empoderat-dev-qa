@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Header from '../components/Header';
+import Header from '../components/HeaderAdmin';
 import { courseService } from '../services/api';
 import '../styles/CourseInfo.css';
 
