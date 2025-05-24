@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/HeaderAdmin';
-import '../styles/ModuleManagement.css';
+import '../styles/ModuleManagementAll.css';
 // IMPORTAR LOS DATOS MOCK
 import { mockCourses } from '../data/mockCourses';
 import { mockModules } from '../data/mockModules';

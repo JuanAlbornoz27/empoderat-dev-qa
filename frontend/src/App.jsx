@@ -13,7 +13,6 @@ import CourseManagement from './pages/CourseManagement';
 import CategoryManagement from './pages/CategoryManagement'; 
 import ModuleManagement from './pages/ModuleManagement';
 import ModulesList from './pages/ModulesList';
-import './App.css';
 
 
 export default function App() {
