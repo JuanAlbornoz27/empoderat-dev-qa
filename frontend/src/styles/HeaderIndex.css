@@ -2,11 +2,12 @@
     height: 80px;
     background-color: white;
     box-shadow: var(--shadow);
-    position: fixed;
+    position: sticky;
+
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000; 
+    z-index: 1000;
 }
 
 .header-main {
@@ -20,17 +21,23 @@
 .logo-container {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
+    /* Alinea el logo a la izquierda */
 }
 
 .logo {
     height: 90px;
     margin-top: 10px;
+    margin-right: 0;
+    /* Elimina el margen derecho */
 }
 
 .right-container {
     display: flex;
     align-items: center;
     gap: 2rem;
+    margin-left: auto;
+    /* Empuja todo el contenido derecho hacia la derecha */
 }
 
 .nav-container {
@@ -44,7 +51,7 @@
     display: flex;
     align-items: center;
     gap: 20px;
-        background: transparent; 
+    background: transparent;
 
 }
 
@@ -98,7 +105,7 @@
     font-weight: 600;
     transition: all 0.3s;
     margin-left: 0;
- 
+
 
 }
 

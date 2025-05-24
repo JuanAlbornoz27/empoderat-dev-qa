@@ -2,14 +2,13 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-top: 80px;
+    padding-top: 0;
 }
 
 .courses-section {
     padding: 30px 0px 0px 0px;
     background-color: var(--secondary-color);
-    scroll-margin-top: 80px;
-    
+    scroll-margin-top: 0;
 }
 
 .section-header {

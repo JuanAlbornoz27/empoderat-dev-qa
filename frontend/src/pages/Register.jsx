@@ -7,6 +7,7 @@ import logo from '../assets/empodera-logo.png';
 const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
+        lastName: '', 
         email: '',
         documentNumber: '',
         phone: '',
@@ -80,6 +81,17 @@ const Register = () => {
                             value={formData.name}
                             onChange={handleChange}
                             placeholder="Nombres *"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <input
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            placeholder="Apellidos *"
                             required
                         />
                     </div>
