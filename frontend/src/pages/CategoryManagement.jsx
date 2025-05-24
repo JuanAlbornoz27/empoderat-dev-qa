@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Header from '../components/HeaderAdmin';
 import { mockCategories } from '../data/mockCategories';
 import '../styles/CategoryManagement.css';
+import Header from "../components/HeaderAdmin";
 
 // Asegurar que Font Awesome esté disponible
 if (!document.querySelector('link[href*="font-awesome"]')) {
@@ -164,10 +164,16 @@ const CategoryManagement = () => {
 
     return (
         <div className="category-management">
-            <Header isLoggedIn={true} isAdmin={true} />
+            {/* <Header isLoggedIn={true} isAdmin={true} /> */}
             
             <main className="main-content">
                 <section className="content-container">
+                    <Header
+                        texto1="Categorías"
+                        texto2="Cursos"
+                        texto3="Módulos"
+                        texto4="Contáctanos"
+                    />
                     <h1 className="page-title">Gestión de Categorías</h1>
                     <p className="page-subtitle">Una forma sencilla de organizar sus ideas</p>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/HeaderAdmin';
+import Header from '../components/HeaderIndex';
 import CourseCard from '../components/CourseCard';
 import { authService, courseService } from '../services/api';
 import '../styles/Dashboard.css';

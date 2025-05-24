@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CursoCard from './CourseCard';
 import '../styles/CoursesLearner.css';
+import Header from "../components/HeaderLearner";
 
 const MisCursos = ({ cursos }) => {
   const navigate = useNavigate();
@@ -19,6 +20,12 @@ const MisCursos = ({ cursos }) => {
 
   return (
     <div className="cursos-container">
+      <Header
+        texto1="Cursos"
+        texto2="Mis cursos"
+        texto3="Módulos"
+        texto4="Contáctanos"
+      />
       <h1 className="cursos-titulo">Mis Cursos</h1>
       <div className="cursos-lista">
         {cursos.map((curso, index) => (

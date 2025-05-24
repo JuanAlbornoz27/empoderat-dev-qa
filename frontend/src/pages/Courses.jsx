@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import CursoCard from './CourseCard';
 import '../styles/CoursesLearner.css';
+import Header from "../components/HeaderLearner";
 
 const Cursos = ({ cursos }) => {
   const [busqueda, setBusqueda] = useState('');
@@ -26,6 +27,12 @@ const Cursos = ({ cursos }) => {
 
   return (
     <div className="cursos-container">
+      <Header
+        texto1="Cursos"
+        texto2="Mis cursos"
+        texto3="Módulos"
+        texto4="Contáctanos"
+      />
       <h1 className="cursos-titulo">Cursos</h1>
       
       <div className="busqueda-container">

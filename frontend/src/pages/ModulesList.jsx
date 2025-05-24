@@ -1,5 +1,5 @@
 import React from "react";
-import Header from "../components/Header";
+import Header from "../components/HeaderLearner";
 import "../styles/ModulesList.css";
 import { modulesData } from "../data/modulesData";
 
