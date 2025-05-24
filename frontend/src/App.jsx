@@ -8,7 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CourseInfo from './pages/CourseInfo';
-import ModuleManagement from './pages/ModuleManagement';
+import ModuleManagement from './pages/ModuleManagementAll';
 import CourseManagement from './pages/CourseManagement';
 import CategoryManagement from './pages/CategoryManagement'; 
 
