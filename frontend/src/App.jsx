@@ -40,7 +40,7 @@ export default function App() {
                 <Route path="/admin/categories/edit/:id" element={<CategoryManagement />} />
 
                 {/* Redirigir la ruta raíz a gestión de módulos */}
-                <Route path="/" element={<Navigate to="/gestion-modulos" replace />} />
+                {/* <Route path="/" element={<Navigate to="/gestion-modulos" replace />} /> */}
                 
                 {/* Página de gestión de módulos (primera imagen) */}
                 <Route path="/gestion-modulos" element={<ModuleManagement />} />
