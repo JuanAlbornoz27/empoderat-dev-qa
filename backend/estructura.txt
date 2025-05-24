@@ -1,0 +1,1443 @@
+# Proyecto Spring Boot Base con Múltiples Bases de Datos y Keycloak
+
+He preparado una estructura completa de proyecto Spring Boot según tus requerimientos. A continuación, te presento los archivos principales organizados por funcionalidad.
+
+## 1. Configuración del Proyecto (pom.xml)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.3</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.empoderat</groupId>
+    <artifactId>empoderat-api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>empoderat-api</name>
+    <description>API Backend para la plataforma Empoderat</description>
+    
+    <properties>
+        <java.version>17</java.version>
+        <keycloak.version>23.0.1</keycloak.version>
+    </properties>
+    
+    <dependencies>
+        <!-- Spring Boot Core -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        
+        <!-- Seguridad -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- Bases de datos -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.32</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-neo4j</artifactId>
+        </dependency>
+        
+        <!-- OpenAPI/Swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.keycloak.bom</groupId>
+                <artifactId>keycloak-adapter-bom</artifactId>
+                <version>${keycloak.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+## 2. Configuración Multi-Datasource
+
+### 2.1. Configuración MySQL (MySQL Config)
+
+```java
+package com.empoderat.config.datasource;
+
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+
+@Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(
+    entityManagerFactoryRef = "mysqlEntityManagerFactory",
+    transactionManagerRef = "mysqlTransactionManager",
+    basePackages = {"com.empoderat.repository.mysql"}
+)
+public class MySQLConfig {
+
+    @Primary
+    @Bean(name = "mysqlDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.mysql")
+    public DataSource dataSource() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Primary
+    @Bean(name = "mysqlEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+            EntityManagerFactoryBuilder builder,
+            @Qualifier("mysqlDataSource") DataSource dataSource) {
+        
+        HashMap<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+        
+        return builder
+                .dataSource(dataSource)
+                .packages("com.empoderat.model.mysql")
+                .properties(properties)
+                .persistenceUnit("mysql")
+                .build();
+    }
+
+    @Primary
+    @Bean(name = "mysqlTransactionManager")
+    public PlatformTransactionManager transactionManager(
+            @Qualifier("mysqlEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+    }
+}
+```
+
+### 2.2. Configuración MongoDB
+
+```java
+package com.empoderat.config.datasource;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+
+@Configuration
+@EnableMongoRepositories(
+    basePackages = "com.empoderat.repository.mongodb",
+    mongoTemplateRef = "mongoTemplate"
+)
+public class MongoDBConfig {
+    
+    @Bean
+    public MongoDatabaseFactory mongoDatabaseFactory() {
+        return new SimpleMongoClientDatabaseFactory("${spring.data.mongodb.uri}");
+    }
+    
+    @Bean
+    public MongoTemplate mongoTemplate() {
+        return new MongoTemplate(mongoDatabaseFactory());
+    }
+}
+```
+
+### 2.3. Configuración Neo4J
+
+```java
+package com.empoderat.config.datasource;
+
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jTemplate;
+import org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager;
+import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+@Configuration
+@EnableNeo4jRepositories(basePackages = "com.empoderat.repository.neo4j")
+@EnableTransactionManagement
+public class Neo4JConfig {
+    
+    @Value("${spring.neo4j.uri}")
+    private String uri;
+    
+    @Value("${spring.neo4j.authentication.username}")
+    private String username;
+    
+    @Value("${spring.neo4j.authentication.password}")
+    private String password;
+    
+    @Bean
+    public Driver neo4jDriver() {
+        return GraphDatabase.driver(uri, AuthTokens.basic(username, password));
+    }
+    
+    @Bean
+    public Neo4jClient neo4jClient(Driver driver) {
+        return Neo4jClient.create(driver);
+    }
+    
+    @Bean
+    public Neo4jTemplate neo4jTemplate(Neo4jClient neo4jClient) {
+        return new Neo4jTemplate(neo4jClient);
+    }
+    
+    @Bean
+    public Neo4jTransactionManager transactionManager(Driver driver) {
+        return new Neo4jTransactionManager(driver);
+    }
+}
+```
+
+## 3. Configuración de Seguridad y Keycloak
+
+### 3.1. SecurityConfig
+
+```java
+package com.empoderat.config.security;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private static final String[] PUBLIC_ENDPOINTS = {
+        "/api/auth/**",
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html"
+    };
+    
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated())
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .build();
+    }
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
+        configuration.setExposedHeaders(List.of("x-auth-token"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+        return converter;
+    }
+    
+    // Convierte roles de Keycloak a roles de Spring Security
+    static class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+        @Override
+        public Collection<GrantedAuthority> convert(Jwt jwt) {
+            // Extraer los roles desde el token JWT
+            Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+            if (realmAccess == null || realmAccess.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            @SuppressWarnings("unchecked")
+            Collection<String> roles = (Collection<String>) realmAccess.get("roles");
+            
+            return roles.stream()
+                .map(role -> "ROLE_" + role.toUpperCase())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+        }
+    }
+}
+```
+
+### 3.2. JwtUtil
+
+```java
+package com.empoderat.config.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+@Component
+public class JwtUtil {
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
+
+    // Extraer el nombre de usuario del token
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    // Extraer la fecha de expiración
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    // Extraer un claim específico
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    // Extraer todos los claims
+    private Claims extractAllClaims(String token) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // Verificar si el token ha expirado
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    // Validar token
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    // Generar token para un usuario
+    public String generateToken(String userName) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, userName);
+    }
+
+    // Crear el token
+    private String createToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSignKey())
+                .compact();
+    }
+
+    // Obtener la llave de firma
+    private Key getSignKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+}
+```
+
+## 4. Modelos/Entidades
+
+### 4.1. Entidades MySQL
+
+```java
+package com.empoderat.model.mysql;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "users")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(unique = true, nullable = false)
+    private String email;
+    
+    @Column(name = "keycloak_id", nullable = false, unique = true)
+    private String keycloakId;
+    
+    private String name;
+    
+    private String phone;
+}
+```
+
+```java
+package com.empoderat.model.mysql;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "courses")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Course {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String title;
+    
+    @Column(length = 2000)
+    private String description;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Category category;
+    
+    @Column(name = "image_url")
+    private String imageUrl;
+    
+    public enum Category {
+        COSTURA, COCINA, EMPRENDIMIENTO, COMUNICACION, ARTESANIA, BELLEZA
+    }
+}
+```
+
+### 4.2. Entidad MongoDB
+
+```java
+package com.empoderat.model.mongodb;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.time.LocalDateTime;
+
+@Document(collection = "resources")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Resource {
+    
+    @Id
+    private String id;
+    
+    @Field("course_id")
+    private Long courseId;
+    
+    @Field("module_id")
+    private Long moduleId;
+    
+    @Field("resource_type")
+    private ResourceType type;
+    
+    // Contenido binario o URL al recurso
+    private String content;
+    
+    @Field("file_name")
+    private String fileName;
+    
+    @Field("content_type")
+    private String contentType;
+    
+    @Field("created_at")
+    private LocalDateTime createdAt;
+    
+    @Field("updated_at")
+    private LocalDateTime updatedAt;
+    
+    public enum ResourceType {
+        VIDEO, IMAGE, DOCUMENT, AUDIO, LINK
+    }
+}
+```
+
+### 4.3. Entidad Neo4J
+
+```java
+package com.empoderat.model.neo4j;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import org.springframework.data.neo4j.core.schema.Id;
+import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Property;
+import org.springframework.data.neo4j.core.schema.Relationship;
+
+import java.time.LocalDateTime;
+
+@Node("UserProgress")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserProgress {
+    
+    @Id
+    @GeneratedValue
+    private Long id;
+    
+    @Property("userId")
+    private Long userId;
+    
+    @Property("courseId")
+    private Long courseId;
+    
+    @Property("progress")
+    private Integer progress;
+    
+    @Property("lastAccess")
+    private LocalDateTime lastAccess;
+    
+    @Property("completed")
+    private Boolean completed;
+    
+    @Relationship(type = "ENROLLED_IN")
+    private CourseNode courseNode;
+    
+    @Node("Course")
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CourseNode {
+        @Id
+        private Long courseId;
+        private String title;
+    }
+}
+```
+
+## 5. Repositorios
+
+### 5.1. Repositorios MySQL
+
+```java
+package com.empoderat.repository.mysql;
+
+import com.empoderat.model.mysql.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    
+    Optional<User> findByEmail(String email);
+    
+    Optional<User> findByKeycloakId(String keycloakId);
+    
+    boolean existsByEmail(String email);
+}
+```
+
+```java
+package com.empoderat.repository.mysql;
+
+import com.empoderat.model.mysql.Course;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface CourseRepository extends JpaRepository<Course, Long> {
+    
+    List<Course> findByCategory(Course.Category category);
+    
+    Page<Course> findByCategory(Course.Category category, Pageable pageable);
+    
+    Page<Course> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+}
+```
+
+### 5.2. Repositorio MongoDB
+
+```java
+package com.empoderat.repository.mongodb;
+
+import com.empoderat.model.mongodb.Resource;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface ResourceRepository extends MongoRepository<Resource, String> {
+    
+    List<Resource> findByCourseId(Long courseId);
+    
+    List<Resource> findByCourseIdAndModuleId(Long courseId, Long moduleId);
+    
+    List<Resource> findByCourseIdAndType(Long courseId, Resource.ResourceType type);
+}
+```
+
+### 5.3. Repositorio Neo4J
+
+```java
+package com.empoderat.repository.neo4j;
+
+import com.empoderat.model.neo4j.UserProgress;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.query.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface UserProgressRepository extends Neo4jRepository<UserProgress, Long> {
+    
+    Optional<UserProgress> findByUserIdAndCourseId(Long userId, Long courseId);
+    
+    List<UserProgress> findByUserId(Long userId);
+    
+    @Query("MATCH (u:UserProgress {userId: $userId}) " +
+           "RETURN u, [(u)-[r:ENROLLED_IN]->(c:Course) | c] as courseNode")
+    List<UserProgress> findAllCoursesForUser(@Param("userId") Long userId);
+    
+    @Query("MATCH (u:UserProgress {userId: $userId, courseId: $courseId}) SET u.progress = $progress RETURN u")
+    UserProgress updateProgress(@Param("userId") Long userId, 
+                               @Param("courseId") Long courseId,
+                               @Param("progress") Integer progress);
+}
+```
+
+## 6. DTOs
+
+### 6.1. DTOs de Autenticación
+
+```java
+package com.empoderat.dto.auth;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AuthRequest {
+    private String email;
+    private String password;
+}
+```
+
+```java
+package com.empoderat.dto.auth;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AuthResponse {
+    private String token;
+    private Long userId;
+    private String name;
+    private String role;
+}
+```
+
+### 6.2. DTOs de Cursos
+
+```java
+package com.empoderat.dto.course;
+
+import com.empoderat.model.mysql.Course;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CourseResponse {
+    private Long id;
+    private String title;
+    private String description;
+    private String category;
+    private String imageUrl;
+    private int moduleCount;
+    
+    public static CourseResponse fromEntity(Course course) {
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .description(course.getDescription())
+                .category(course.getCategory().toString())
+                .imageUrl(course.getImageUrl())
+                .build();
+    }
+}
+```
+
+### 6.3. DTOs de Progreso
+
+```java
+package com.empoderat.dto.progress;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProgressDTO {
+    private Long userId;
+    private Long courseId;
+    private String courseTitle;
+    private Integer percentage;
+    private LocalDateTime lastAccess;
+    private Boolean completed;
+}
+```
+
+## 7. Controladores
+
+### 7.1. AuthController
+
+```java
+package com.empoderat.controller;
+
+import com.empoderat.config.security.JwtUtil;
+import com.empoderat.dto.auth.AuthRequest;
+import com.empoderat.dto.auth.AuthResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Tag(name = "Autenticación", description = "Endpoints para autenticación de usuarios")
+public class AuthController {
+
+    private final JwtUtil jwtUtil;
+
+    @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Autentica un usuario con sus credenciales")
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
+        // En un sistema real, este método validaría las credenciales contra Keycloak
+        // Por ahora, simulamos una respuesta exitosa para propósitos de prueba
+        
+        String token = jwtUtil.generateToken(authRequest.getEmail());
+        
+        return ResponseEntity.ok(AuthResponse.builder()
+                .token(token)
+                .userId(1L)
+                .name("Usuario de Prueba")
+                .role("USER")
+                .build());
+    }
+}
+```
+
+### 7.2. CourseController
+
+```java
+package com.empoderat.controller;
+
+import com.empoderat.dto.course.CourseResponse;
+import com.empoderat.model.mysql.Course;
+import com.empoderat.service.CourseService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/courses")
+@RequiredArgsConstructor
+@Tag(name = "Cursos", description = "Endpoints para gestión de cursos")
+public class CourseController {
+
+    private final CourseService courseService;
+
+    @GetMapping
+    @Operation(
+        summary = "Obtener todos los cursos", 
+        description = "Devuelve una lista paginada de todos los cursos disponibles",
+        security = @SecurityRequirement(name = "jwt")
+    )
+    public ResponseEntity<Page<CourseResponse>> getAllCourses(
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<CourseResponse> courses = courseService.getAllCourses(pageable);
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/category/{category}")
+    @Operation(
+        summary = "Buscar cursos por categoría", 
+        description = "Devuelve una lista de cursos filtrados por categoría",
+        security = @SecurityRequirement(name = "jwt")
+    )
+    public ResponseEntity<List<CourseResponse>> getCoursesByCategory(
+            @PathVariable String category) {
+        try {
+            Course.Category categoryEnum = Course.Category.valueOf(category.toUpperCase());
+            List<Course> courses = courseService.getCoursesByCategory(categoryEnum);
+            
+            List<CourseResponse> response = courses.stream()
+                    .map(CourseResponse::fromEntity)
+                    .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            // Categoría no válida
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @GetMapping("/search")
+    @Operation(
+        summary = "Buscar cursos por título", 
+        description = "Devuelve una lista paginada de cursos filtrados por título",
+        security = @SecurityRequirement(name = "jwt")
+    )
+    public ResponseEntity<Page<CourseResponse>> searchCourses(
+            @RequestParam String query,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<CourseResponse> courses = courseService.searchCourses(query, pageable);
+        return ResponseEntity.ok(courses);
+    }
+}
+```
+
+### 7.3. ProgressController
+
+```java
+package com.empoderat.controller;
+
+import com.empoderat.dto.progress.ProgressDTO;
+import com.empoderat.service.ProgressService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/progress")
+@RequiredArgsConstructor
+@Tag(name = "Progreso", description = "Endpoints para gestión de progreso de usuarios")
+public class ProgressController {
+
+    private final ProgressService progressService;
+
+    @GetMapping("/{userId}")
+    @Operation(
+        summary = "Obtener progreso del usuario", 
+        description = "Devuelve el progreso del usuario en todos sus cursos",
+        security = @SecurityRequirement(name = "jwt")
+    )
+    public ResponseEntity<List<ProgressDTO>> getUserProgress(@PathVariable Long userId) {
+        List<ProgressDTO> progressList = progressService.getUserProgressByUserId(userId);
+        return ResponseEntity.ok(progressList);
+    }
+    
+    @GetMapping("/{userId}/course/{courseId}")
+    @Operation(
+        summary = "Obtener progreso de un curso específico", 
+        description = "Devuelve el progreso del usuario en un curso específico",
+        security = @SecurityRequirement(name = "jwt")
+    )
+    public ResponseEntity<ProgressDTO> getUserCourseProgress(
+            @PathVariable Long userId, 
+            @PathVariable Long courseId) {
+        return progressService.getUserCourseProgress(userId, courseId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+}
+```
+
+## 8. Services
+
+### 8.1. CourseService
+
+```java
+package com.empoderat.service;
+
+import com.empoderat.dto.course.CourseResponse;
+import com.empoderat.model.mysql.Course;
+import com.empoderat.repository.mysql.CourseRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CourseService {
+
+    private final CourseRepository courseRepository;
+
+    /**
+     * Obtiene todos los cursos de forma paginada
+     */
+    @Transactional(readOnly = true)
+    public Page<CourseResponse> getAllCourses(Pageable pageable) {
+        return courseRepository.findAll(pageable)
+                .map(CourseResponse::fromEntity);
+    }
+
+    /**
+     * Busca cursos por categoría
+     */
+    @Transactional(readOnly = true)
+    public List<Course> getCoursesByCategory(Course.Category category) {
+        return courseRepository.findByCategory(category);
+    }
+
+    /**
+     * Busca cursos por título (parcial)
+     */
+    @Transactional(readOnly = true)
+    public Page<CourseResponse> searchCourses(String query, Pageable pageable) {
+        return courseRepository.findByTitleContainingIgnoreCase(query, pageable)
+                .map(CourseResponse::fromEntity);
+    }
+}
+```
+
+### 8.2. ProgressService
+
+```java
+package com.empoderat.service;
+
+import com.empoderat.dto.progress.ProgressDTO;
+import com.empoderat.model.mysql.Course;
+import com.empoderat.model.neo4j.UserProgress;
+import com.empoderat.repository.mysql.CourseRepository;
+import com.empoderat.repository.neo4j.UserProgressRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProgressService {
+
+    private final UserProgressRepository userProgressRepository;
+    private final CourseRepository courseRepository;
+
+    /**
+     * Obtiene el progreso de todos los cursos de un usuario
+     */
+    @Transactional(readOnly = true)
+    public List<ProgressDTO> getUserProgressByUserId(Long userId) {
+        List<UserProgress> progressList = userProgressRepository.findByUserId(userId);
+        
+        return progressList.stream()
+                .map(this::mapToProgressDTO)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Obtiene el progreso de un usuario en un curso específico
+     */
+    @Transactional(readOnly = true)
+    public Optional<ProgressDTO> getUserCourseProgress(Long userId, Long courseId) {
+        return userProgressRepository.findByUserIdAndCourseId(userId, courseId)
+                .map(this::mapToProgressDTO);
+    }
+    
+    /**
+     * Actualiza el progreso de un usuario en un curso
+     */
+    @Transactional
+    public ProgressDTO updateUserProgress(Long userId, Long courseId, Integer percentage) {
+        UserProgress progress = userProgressRepository.updateProgress(userId, courseId, percentage);
+        return mapToProgressDTO(progress);
+    }
+    
+    /**
+     * Convierte una entidad UserProgress a un DTO
+     */
+    private ProgressDTO mapToProgressDTO(UserProgress progress) {
+        String courseTitle = "";
+        
+        // Si el courseNode no está disponible, buscar en MySQL
+        if (progress.getCourseNode() != null) {
+            courseTitle = progress.getCourseNode().getTitle();
+        } else {
+            Optional<Course> course = courseRepository.findById(progress.getCourseId());
+            if (course.isPresent()) {
+                courseTitle = course.get().getTitle();
+            }
+        }
+        
+        return ProgressDTO.builder()
+                .userId(progress.getUserId())
+                .courseId(progress.getCourseId())
+                .courseTitle(courseTitle)
+                .percentage(progress.getProgress())
+                .lastAccess(progress.getLastAccess())
+                .completed(progress.getCompleted())
+                .build();
+    }
+}
+```
+
+## 9. Manejo de Excepciones
+
+```java
+package com.empoderat.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Error de autenticación: " + ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+    
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "Acceso denegado: " + ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Se ha producido un error: " + ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    public static class ErrorResponse {
+        private int status;
+        private String message;
+        private LocalDateTime timestamp;
+        
+        public ErrorResponse(int status, String message, LocalDateTime timestamp) {
+            this.status = status;
+            this.message = message;
+            this.timestamp = timestamp;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+    }
+}
+```
+
+```java
+package com.empoderat.exception;
+
+public class ResourceNotFoundException extends RuntimeException {
+    
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+    
+    public ResourceNotFoundException(String resourceName, String fieldName, Object fieldValue) {
+        super(String.format("%s no encontrado con %s: '%s'", resourceName, fieldName, fieldValue));
+    }
+}
+```
+
+## 10. Configuración Swagger/OpenAPI
+
+```java
+package com.empoderat.config;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenAPIConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("API de EmpoderaT")
+                        .version("1.0.0")
+                        .description("API RESTful para la plataforma de educación EmpoderaT")
+                        .contact(new Contact()
+                                .name("Equipo EmpoderaT")
+                                .email("contacto@empoderat.com")
+                                .url("https://www.empoderat.com")))
+                .addSecurityItem(new SecurityRequirement().addList("jwt"))
+                .components(new Components()
+                        .addSecuritySchemes("jwt", 
+                                new SecurityScheme()
+                                        .name("jwt")
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .in(SecurityScheme.In.HEADER)
+                                        .description("Ingrese el token JWT con el prefijo Bearer.")));
+    }
+}
+```
+
+## 11. application.properties
+
+```properties
+# Configuración general
+spring.application.name=empoderat-api
+server.port=8080
+server.servlet.context-path=/
+spring.main.allow-bean-definition-overriding=true
+
+# Configuración MySQL (entidades principales)
+spring.datasource.mysql.jdbc-url=jdbc:mysql://localhost:3306/empoderat?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.mysql.username=root
+spring.datasource.mysql.password=root
+spring.datasource.mysql.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# Configuración MongoDB (recursos y logs)
+spring.data.mongodb.uri=mongodb://localhost:27017/empoderat
+spring.data.mongodb.auto-index-creation=true
+
+# Configuración Neo4J (relaciones y progreso)
+spring.neo4j.uri=bolt://localhost:7687
+spring.neo4j.authentication.username=neo4j
+spring.neo4j.authentication.password=password
+
+# Configuración JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.show-sql=true
+
+# Configuración Keycloak
+spring.security.oauth2.resourceserver.jwt.issuer-uri=http://localhost:8180/auth/realms/empoderat
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+keycloak.realm=empoderat
+keycloak.auth-server-url=http://localhost:8180/auth
+keycloak.ssl-required=external
+keycloak.resource=empoderat-backend
+keycloak.credentials.secret=tu-secreto-keycloak
+keycloak.use-resource-role-mappings=true
+keycloak.bearer-only=true
+
+# Configuración JWT (para el servicio mock de autenticación)
+jwt.secret=cGlwaWx1Y2hhc3BpcGlsdWNoYXNwaXBpbHVjaGFzcGlwaWx1Y2hhc3BpcGlsdWNoYXNwaXBp
+jwt.expiration=86400000
+
+# Configuración CORS
+cors.allowed-origins=*
+cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
+cors.allowed-headers=*
+cors.exposed-headers=Authorization
+cors.max-age=3600
+
+# Configuración Logging
+logging.level.org.springframework=INFO
+logging.level.com.empoderat=DEBUG
+```
+
+## 12. Recomendaciones para extender la base
+
+1. **Estructura Completa de Módulos**: Implementar entidades y servicios para los módulos dentro de los cursos, incluyendo lecciones, evaluaciones y recursos.
+
+2. **Sistema de Notificaciones**: Añadir una capa para notificaciones a usuarios por eventos como nuevos cursos, actualizaciones o recordatorios.
+
+3. **Cache con Redis**: Implementar Redis para cachear datos frecuentemente accedidos como listados de cursos o información de perfil.
+
+4. **Servicio de Analytics**: Desarrollar la capa de analytics para procesar y visualizar datos de progreso y engagement de usuarios.
+
+5. **Testing Automatizado**: Añadir tests unitarios y de integración para asegurar la robustez del código.
+
+6. **CI/CD Pipeline**: Configurar un pipeline para integración y despliegue continuo.
+
+7. **Mensajería con RabbitMQ**: Implementar un sistema de colas para procesar tareas asíncronas como la generación de reportes o envío de correos.
+
+8. **Microservicios**: Considerar la separación en microservicios si la aplicación crece significativamente, especialmente para módulos como autenticación o analytics.
+
+9. **Control de Versiones API**: Implementar versionado de API (v1, v2) para permitir evolución sin romper compatibilidad.
+
+10. **Auditoría de Datos**: Agregar mecanismos de auditoría para cambios en datos sensibles o importantes.
+
+Esta estructura proporciona una base sólida para la implementación de un backend completo para la plataforma EmpoderaT con soporte para múltiples bases de datos, seguridad mediante Keycloak, y APIs bien documentadas.
+
+Código similar encontrado con 7 tipos de licencias
