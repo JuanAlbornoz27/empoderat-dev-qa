@@ -1,0 +1,43 @@
+distributed-image-storage/
+│
+├── backend/
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
+│   │   ├── vite.svg
+│   ├── src/
+│   │   ├── assets/
+│   │   │   ├── curso-artesania.png
+│   │   │   ├── curso-bordado.png
+│   │   ├── components/
+│   │   │   ├── CourseCard.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   └── Header.jsx
+│   │   │   └── Navigation.jsx
+│   │   ├── data/
+│   │   │   └── mockCourses.js
+│   │   │   └── mockModules.js
+│   │   ├── pages/
+│   │   │   └── CourseInfo.jsx
+│   │   │   └── Dashboard.jsx
+│   │   │   └── Home.jsx
+│   │   │   └── Login.jsx
+│   │   │   └── ModuleManagement.jsx
+│   │   │   └── Register.jsx
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   ├── styles/
+│   │   ├── App.js
+│   │   └── index.js
+│   ├── .gitignore
+│   ├── index.html
+│   ├── package.lock.json
+│   ├── package.json
+│   ├── README.md
+│   ├── vite.config.js
+├── nginx
+├── .env.dev
+├── .env.prod
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
+└── README.md
