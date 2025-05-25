@@ -28,44 +28,35 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_ENDPOINTS = {
-        "/api/auth/**",
-        "/v3/api-docs/**",
-        "/swagger-ui/**",
-        "/swagger-ui.html",
-        // Para pruebas iniciales, puedes permitir todos los endpoints
-        // (elimina esto en producción)
-        "/**"  
-    };
+    // private static final String[] PUBLIC_ENDPOINTS = {
+    //     "/api/auth/**",
+    //     "/v3/api-docs/**",
+    //     "/swagger-ui/**",
+    //     "/swagger-ui.html",
+    //     // Para pruebas iniciales, puedes permitir todos los endpoints
+    //     // (elimina esto en producción)
+    //     "/**"  
+    // };
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuración CORS
+            .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para pruebas
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated())
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-                
-        // Configurar JWT solo si no estamos en desarrollo/pruebas
-        // Para pruebas iniciales, puedes comentar esta parte
-        http.oauth2ResourceServer(oauth2 -> oauth2
-            .jwt(jwt -> jwt
-                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
-                
+                .requestMatchers("/api/auth/**", "/api/courses").permitAll() // Permitir autenticación sin restricciones
+                .anyRequest().authenticated());
         return http.build();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
-        configuration.setExposedHeaders(List.of("x-auth-token"));
+        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173")); // Origen del frontend
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token"));
+        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+        configuration.setAllowCredentials(true); // Permitir credenciales
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

@@ -66,8 +66,7 @@ public class CourseController {
     @GetMapping("/search")
     @Operation(
         summary = "Buscar cursos por título", 
-        description = "Devuelve una lista paginada de cursos filtrados por título",
-        security = @SecurityRequirement(name = "jwt")
+        description = "Devuelve una lista paginada de cursos filtrados por título"
     )
     public ResponseEntity<Page<CourseResponse>> searchCourses(
             @RequestParam String query,
