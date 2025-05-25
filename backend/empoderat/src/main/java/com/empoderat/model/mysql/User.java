@@ -1,4 +1,4 @@
-package main.java.com.empoderat.model.mysql;
+package com.empoderat.model.mysql;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

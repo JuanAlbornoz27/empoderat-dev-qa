@@ -1,4 +1,4 @@
-package main.java.com.empoderat.dto.auth;
+package com.empoderat.dto.course;
 
 import com.empoderat.model.mysql.Course;
 import lombok.AllArgsConstructor;

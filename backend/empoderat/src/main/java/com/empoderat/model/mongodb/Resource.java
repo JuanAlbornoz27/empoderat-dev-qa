@@ -1,4 +1,4 @@
-package main.java.com.empoderat.model.mongodb;
+package com.empoderat.model.mongodb;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

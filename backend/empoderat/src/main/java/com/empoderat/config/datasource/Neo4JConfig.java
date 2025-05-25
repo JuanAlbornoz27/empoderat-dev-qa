@@ -1,4 +1,4 @@
-package main.java.com.empoderat.config.datasource;
+package com.empoderat.config.datasource;
 
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;

@@ -1,4 +1,4 @@
-package main.java.com.empoderat.model.neo4j;
+package com.empoderat.model.neo4j;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

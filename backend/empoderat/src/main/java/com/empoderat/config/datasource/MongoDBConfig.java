@@ -1,4 +1,4 @@
-package main.java.com.empoderat.config.datasource;
+package com.empoderat.config.datasource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

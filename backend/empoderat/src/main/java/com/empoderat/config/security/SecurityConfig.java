@@ -1,4 +1,4 @@
-package main.java.com.empoderat.config.security;
+package com.empoderat.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,24 +32,31 @@ public class SecurityConfig {
         "/api/auth/**",
         "/v3/api-docs/**",
         "/swagger-ui/**",
-        "/swagger-ui.html"
+        "/swagger-ui.html",
+        // Para pruebas iniciales, puedes permitir todos los endpoints
+        // (elimina esto en producción)
+        "/**"  
     };
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt
-                    .jwtAuthenticationConverter(jwtAuthenticationConverter())))
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .build();
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                
+        // Configurar JWT solo si no estamos en desarrollo/pruebas
+        // Para pruebas iniciales, puedes comentar esta parte
+        http.oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> jwt
+                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                
+        return http.build();
     }
     
     @Bean
@@ -75,19 +82,24 @@ public class SecurityConfig {
     static class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
         @Override
         public Collection<GrantedAuthority> convert(Jwt jwt) {
-            // Extraer los roles desde el token JWT
-            Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
-            if (realmAccess == null || realmAccess.isEmpty()) {
+            try {
+                // Extraer los roles desde el token JWT
+                Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+                if (realmAccess == null || realmAccess.isEmpty()) {
+                    return Collections.emptyList();
+                }
+
+                @SuppressWarnings("unchecked")
+                Collection<String> roles = (Collection<String>) realmAccess.get("roles");
+                
+                return roles.stream()
+                    .map(role -> "ROLE_" + role.toUpperCase())
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+            } catch (Exception e) {
+                // Manejo de errores
                 return Collections.emptyList();
             }
-
-            @SuppressWarnings("unchecked")
-            Collection<String> roles = (Collection<String>) realmAccess.get("roles");
-            
-            return roles.stream()
-                .map(role -> "ROLE_" + role.toUpperCase())
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
         }
     }
 }

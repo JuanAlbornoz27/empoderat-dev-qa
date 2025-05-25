@@ -1,4 +1,4 @@
-package main.java.com.empoderat.repository.mongobd;
+package com.empoderat.repository.mongobd;
 
 import com.empoderat.model.mongodb.Resource;
 import org.springframework.data.mongodb.repository.MongoRepository;
