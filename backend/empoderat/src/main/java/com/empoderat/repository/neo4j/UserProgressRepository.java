@@ -1,4 +1,4 @@
-package main.java.com.empoderat.repository.neo4j;
+package com.empoderat.repository.neo4j;
 
 import com.empoderat.model.neo4j.UserProgress;
 import org.springframework.data.neo4j.repository.Neo4jRepository;

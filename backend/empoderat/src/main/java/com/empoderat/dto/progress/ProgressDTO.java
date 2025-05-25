@@ -1,4 +1,4 @@
-package main.java.com.empoderat.dto.progress;
+package com.empoderat.dto.progress;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

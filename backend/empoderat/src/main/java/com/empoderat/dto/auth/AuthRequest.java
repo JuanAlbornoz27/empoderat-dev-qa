@@ -1,4 +1,4 @@
-package main.java.com.empoderat.dto.auth;
+package com.empoderat.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

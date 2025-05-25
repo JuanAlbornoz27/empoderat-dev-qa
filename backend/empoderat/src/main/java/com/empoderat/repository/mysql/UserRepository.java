@@ -1,4 +1,4 @@
-package main.java.com.empoderat.repository.mysql;
+package com.empoderat.repository.mysql;
 
 import com.empoderat.model.mysql.User;
 import org.springframework.data.jpa.repository.JpaRepository;

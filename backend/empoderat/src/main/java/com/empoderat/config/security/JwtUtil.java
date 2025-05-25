@@ -1,4 +1,4 @@
-package main.java.com.empoderat.config.security;
+package com.empoderat.config.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

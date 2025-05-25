@@ -1,4 +1,4 @@
-package main.java.com.empoderat.config.datasource;
+package com.empoderat.config.datasource;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
