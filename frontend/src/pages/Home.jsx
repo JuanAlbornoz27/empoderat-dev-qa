@@ -8,9 +8,9 @@ import Footer from '../components/Footer';
 import { mockCourses } from '../data/mockCourses';
 
 const Home = () => {
-  // const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState([]);
 
-  const [courses, setCourses] = useState(mockCourses);
+  //const [courses, setCourses] = useState(mockCourses);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
