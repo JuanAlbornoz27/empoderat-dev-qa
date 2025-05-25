@@ -29,23 +29,26 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     // private static final String[] PUBLIC_ENDPOINTS = {
-    //     "/api/auth/**",
-    //     "/v3/api-docs/**",
-    //     "/swagger-ui/**",
-    //     "/swagger-ui.html",
-    //     // Para pruebas iniciales, puedes permitir todos los endpoints
-    //     // (elimina esto en producción)
-    //     "/**"  
+    // "/api/auth/**",
+    // "/v3/api-docs/**",
+    // "/swagger-ui/**",
+    // "/swagger-ui.html",
+    // // Para pruebas iniciales, puedes permitir todos los endpoints
+    // // (elimina esto en producción)
+    // "/**"
     // };
-    
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuración CORS
-            .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para pruebas
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/**", "/api/courses").permitAll() // Permitir autenticación sin restricciones
-                .anyRequest().authenticated());
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/**", "/v3/api-docs/**", "/swagger-ui/**", "/favicon.ico").permitAll() // Añadir
+                                                                                                                     // favicon.ico
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         return http.build();
     }
 
@@ -68,7 +71,7 @@ public class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
         return converter;
     }
-    
+
     // Convierte roles de Keycloak a roles de Spring Security
     static class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
         @Override
@@ -82,11 +85,11 @@ public class SecurityConfig {
 
                 @SuppressWarnings("unchecked")
                 Collection<String> roles = (Collection<String>) realmAccess.get("roles");
-                
+
                 return roles.stream()
-                    .map(role -> "ROLE_" + role.toUpperCase())
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
+                        .map(role -> "ROLE_" + role.toUpperCase())
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
             } catch (Exception e) {
                 // Manejo de errores
                 return Collections.emptyList();

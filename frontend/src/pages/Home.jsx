@@ -18,9 +18,12 @@ const Home = () => {
     const fetchCourses = async () => {
       try {
         const response = await courseService.getAllCourses();
+        // Asumimos que response.data es directamente el array de cursos
         setCourses(response.data);
       } catch (error) {
         console.error('Error fetching courses:', error);
+        // Fallback a datos mock en caso de error
+        setCourses(mockCourses);
       }
     };
 

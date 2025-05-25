@@ -29,45 +29,27 @@ public class CourseController {
     private final CourseService courseService;
 
     @GetMapping
-    @Operation(
-        summary = "Obtener todos los cursos", 
-        description = "Devuelve una lista paginada de todos los cursos disponibles",
-        security = @SecurityRequirement(name = "jwt")
-    )
-    public ResponseEntity<Page<CourseResponse>> getAllCourses(
-            @PageableDefault(size = 10) Pageable pageable) {
-        Page<CourseResponse> courses = courseService.getAllCourses(pageable);
+    @Operation(summary = "Obtener todos los cursos", description = "Devuelve todos los cursos disponibles")
+    public ResponseEntity<List<CourseResponse>> getAllCourses() {
+        List<CourseResponse> courses = courseService.getAllCoursesWithoutPagination();
         return ResponseEntity.ok(courses);
     }
 
-    @GetMapping("/category/{category}")
-    @Operation(
-        summary = "Buscar cursos por categoría", 
-        description = "Devuelve una lista de cursos filtrados por categoría",
-        security = @SecurityRequirement(name = "jwt")
-    )
+    @GetMapping("/category/{categoryId}")
+    @Operation(summary = "Buscar cursos por categoría", description = "Devuelve una lista de cursos filtrados por categoría", security = @SecurityRequirement(name = "jwt"))
     public ResponseEntity<List<CourseResponse>> getCoursesByCategory(
-            @PathVariable String category) {
-        try {
-            Course.Category categoryEnum = Course.Category.valueOf(category.toUpperCase());
-            List<Course> courses = courseService.getCoursesByCategory(categoryEnum);
-            
-            List<CourseResponse> response = courses.stream()
-                    .map(CourseResponse::fromEntity)
-                    .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            // Categoría no válida
-            return ResponseEntity.badRequest().build();
-        }
+            @PathVariable Long categoryId) {
+        List<Course> courses = courseService.getCoursesByCategory(categoryId);
+
+        List<CourseResponse> response = courses.stream()
+                .map(CourseResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/search")
-    @Operation(
-        summary = "Buscar cursos por título", 
-        description = "Devuelve una lista paginada de cursos filtrados por título"
-    )
+    @Operation(summary = "Buscar cursos por título", description = "Devuelve una lista paginada de cursos filtrados por título")
     public ResponseEntity<Page<CourseResponse>> searchCourses(
             @RequestParam String query,
             @PageableDefault(size = 10) Pageable pageable) {

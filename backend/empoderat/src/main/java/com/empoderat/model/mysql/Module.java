@@ -1,22 +1,19 @@
 package com.empoderat.model.mysql;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "courses")
+@Table(name = "modules")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Course {
+public class Module {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,22 +29,15 @@ public class Course {
     @Column(length = 2000)
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
-    @Column(name = "enrolled_count")
-    private Integer enrolledCount;
-
-    @Column(name = "estimated_duration")
-    private Integer estimatedDuration;
-
     @Column(name = "image_url")
     private String imageUrl;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<Module> modules = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "course_id", nullable = false)
+    @JsonBackReference
+    private Course course;
+
+    // Los recursos se obtienen a través del repositorio de MongoDB
 
     public enum Status {
         ACTIVE, INACTIVE

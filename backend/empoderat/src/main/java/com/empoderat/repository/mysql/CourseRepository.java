@@ -1,5 +1,6 @@
 package com.empoderat.repository.mysql;
 
+import com.empoderat.model.mysql.Category;
 import com.empoderat.model.mysql.Course;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,9 +12,9 @@ import java.util.List;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     
-    List<Course> findByCategory(Course.Category category);
+    List<Course> findByCategory(Category category);
     
-    Page<Course> findByCategory(Course.Category category, Pageable pageable);
+    Page<Course> findByCategory(Category category, Pageable pageable);
     
-    Page<Course> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+    Page<Course> findByNameContainingIgnoreCase(String title, Pageable pageable);
 }

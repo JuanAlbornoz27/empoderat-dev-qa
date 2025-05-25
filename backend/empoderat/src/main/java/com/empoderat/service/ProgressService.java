@@ -62,7 +62,7 @@ public class ProgressService {
         } else {
             Optional<Course> course = courseRepository.findById(progress.getCourseId());
             if (course.isPresent()) {
-                courseTitle = course.get().getTitle();
+                courseTitle = course.get().getName();
             }
         }
         
