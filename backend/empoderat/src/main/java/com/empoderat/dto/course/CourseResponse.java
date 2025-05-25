@@ -15,6 +15,8 @@ public class CourseResponse {
     private String name;
     private String description;
     private String category;
+    private int enrolledCount;
+    private int estimatedDuration;
     private String imageUrl;
     private int moduleCount;
 
@@ -24,6 +26,8 @@ public class CourseResponse {
                 .name(course.getName())
                 .description(course.getDescription())
                 .category(course.getCategory() != null ? course.getCategory().getName() : null)
+                .enrolledCount(course.getEnrolledCount() != null ? course.getEnrolledCount() : 0)
+                .estimatedDuration(course.getEstimatedDuration() != null ? course.getEstimatedDuration() : 0)
                 .imageUrl(course.getImageUrl())
                 .moduleCount(course.getModules() != null ? course.getModules().size() : 0)
                 .build();

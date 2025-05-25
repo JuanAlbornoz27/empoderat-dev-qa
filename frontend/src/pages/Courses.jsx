@@ -1,10 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CursoCard from './CourseCard';
 import '../styles/CoursesLearner.css';
 import Header from "../components/HeaderLearner";
+import { courseService } from '../services/api';
+import { mockCourses } from '../data/mockCourses';
 
-const Cursos = ({ cursos }) => {
+const Cursos = () => {
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
+  
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const response = await courseService.getAllCourses();
+        
+        // Adaptamos el formato de la respuesta del API al formato que espera el componente
+        const adaptedCourses = response.data.map(course => ({
+          id: course.id,
+          nombre: course.title || course.name,
+          descripcion: course.description,
+          duracion: course.estimatedDuration || 24,
+          portada: course.imageUrl || course.image || "/default-course-image.png"
+        }));
+        
+        setCursos(adaptedCourses);
+        setError(null);
+      } catch (error) {
+        console.error('Error al cargar cursos:', error);
+        setError('No se pudieron cargar los cursos');
+        
+        // Fallback a datos mock en caso de error
+        const adaptedMockCourses = mockCourses.map(course => ({
+          id: course.id,
+          nombre: course.title,
+          descripcion: course.description,
+          duracion: 24,
+          portada: course.image || "/default-course-image.png"
+        }));
+        setCursos(adaptedMockCourses);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
   const normalizeText = (text) => {
     return text
       .normalize('NFD')           
@@ -54,15 +98,21 @@ const Cursos = ({ cursos }) => {
         </div>
       </div>
       
-      <div className="cursos-lista">
-        {cursosFiltrados.map((curso, index) => (
-          <CursoCard 
-            key={index} 
-            curso={curso} 
-            onInscribir={handleInscripcion} 
-          />
-        ))}
-      </div>
+      {loading ? (
+        <p className="loading-message">Cargando cursos...</p>
+      ) : error ? (
+        <p className="error-message">{error}</p>
+      ) : (
+        <div className="cursos-lista">
+          {cursosFiltrados.map((curso) => (
+            <CursoCard 
+              key={curso.id} 
+              curso={curso} 
+              onInscribir={handleInscripcion} 
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
