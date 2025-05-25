@@ -13,12 +13,17 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
     mongoTemplateRef = "mongoTemplate"
 )
 public class MongoDBConfig {
-    
+
+    // Inyectamos aquí el valor real de application.properties
+    @org.springframework.beans.factory.annotation.Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
+
     @Bean
     public MongoDatabaseFactory mongoDatabaseFactory() {
-        return new SimpleMongoClientDatabaseFactory("${spring.data.mongodb.uri}");
+        // Ahora "mongoUri" es, por ejemplo, "mongodb://localhost:27017/empoderat"
+        return new SimpleMongoClientDatabaseFactory(mongoUri);
     }
-    
+
     @Bean
     public MongoTemplate mongoTemplate() {
         return new MongoTemplate(mongoDatabaseFactory());
