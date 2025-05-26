@@ -1,0 +1,98 @@
+.unauthorized-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.unauthorized-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background-color: var(--secondary-color);
+}
+
+.unauthorized-container {
+    background-color: white;
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.logo-container {
+    margin-bottom: 2rem;
+}
+
+.logo-image {
+    height: 80px;
+    object-fit: contain;
+}
+
+.unauthorized-title {
+    color: var(--primary-color);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-family: "Protest Riot", system-ui;
+}
+
+.unauthorized-message {
+    margin-bottom: 2rem;
+}
+
+.unauthorized-message p {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.unauthorized-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.back-button,
+.home-button {
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.back-button {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.home-button {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.back-button:hover,
+.home-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .unauthorized-container {
+        padding: 2rem;
+        margin: 1rem;
+    }
+
+    .unauthorized-actions {
+        flex-direction: column;
+    }
+
+    .back-button,
+    .home-button {
+        width: 100%;
+        text-align: center;
+    }
+}

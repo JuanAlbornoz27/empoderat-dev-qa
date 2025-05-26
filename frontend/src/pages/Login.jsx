@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import '../styles/Register.css';
 import logo from '../assets/empodera-logo.png';
 
@@ -8,19 +8,43 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      const response = await authService.login(email, password);
-      localStorage.setItem('authToken', response.data.token);
-      navigate('/dashboard');
+      await login(email, password);
+
+      // Redirigir a la página anterior o al dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (err) {
-      setError('Credenciales inválidas. Por favor intente nuevamente.');
       console.error('Login error:', err);
+
+      if (err.response?.status === 401) {
+        setError('Credenciales inválidas. Por favor verifique su email y contraseña.');
+      } else if (err.response?.status === 400) {
+        setError('Datos de entrada inválidos. Por favor verifique la información ingresada.');
+      } else {
+        setError('Error al iniciar sesión. Por favor intente nuevamente.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,6 +78,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Correo electrónico"
               required
+              disabled={loading}
             />
           </div>
 
@@ -64,10 +89,17 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Contraseña"
               required
+              disabled={loading}
             />
           </div>
 
-          <button type="submit" className="auth-button">Entrar</button>
+          <button
+            type="submit"
+            className="auth-button"
+            disabled={loading}
+          >
+            {loading ? 'Ingresando...' : 'Entrar'}
+          </button>
 
           <div className="auth-links">
             <Link to="/forgot-password" className="forgot-password-link">
