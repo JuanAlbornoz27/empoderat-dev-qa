@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "modules")
@@ -36,6 +38,10 @@ public class Module {
     @JoinColumn(name = "course_id", nullable = false)
     @JsonBackReference
     private Course course;
+
+    // Relación muchos a muchos con usuarios
+    @ManyToMany(mappedBy = "completedModules", fetch = FetchType.LAZY)
+    private List<User> usersCompleted = new ArrayList<>();
 
     // Los recursos se obtienen a través del repositorio de MongoDB
 

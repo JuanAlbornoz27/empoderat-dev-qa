@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.util.ArrayList;
@@ -32,8 +33,9 @@ public class Course {
     @Column(length = 2000)
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(name = "enrolled_count")
@@ -48,6 +50,10 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Module> modules = new ArrayList<>();
+
+    // Relación muchos a muchos con usuarios
+    @ManyToMany(mappedBy = "enrolledCourses", fetch = FetchType.LAZY)
+    private List<User> enrolledUsers = new ArrayList<>();
 
     public enum Status {
         ACTIVE, INACTIVE

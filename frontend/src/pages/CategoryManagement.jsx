@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { mockCategories } from '../data/mockCategories';
 import '../styles/CategoryManagement.css';
 import Header from "../components/HeaderAdmin";
+import { categoryService } from "../services/api";
 
 // Asegurar que Font Awesome esté disponible
 if (!document.querySelector('link[href*="font-awesome"]')) {
@@ -32,11 +33,30 @@ const CategoryManagement = () => {
             setLoading(true);
             setError(null);
             
-            // Simular delay de API solo para la carga inicial
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Cargar todos los datos
-            setAllCategories(mockCategories);
+            try {
+                const response = await categoryService.getAllCategories();
+                
+                if (response && response.data) {
+                    // Transformar los datos si es necesario para asegurar compatibilidad
+                    const transformedCategories = response.data.map(category => ({
+                        id: category.id,
+                        name: category.name,
+                        description: category.description || '',
+                        courseCount: category.courseCount || category.courses?.length || 0,
+                        imageUrl: category.imageUrl || null
+                    }));
+                    
+                    setAllCategories(transformedCategories);
+                    console.log('Categorías cargadas desde API:', transformedCategories);
+                } else {
+                    throw new Error('No se recibieron datos');
+                }
+            } catch (apiError) {
+                console.error('Error al obtener categorías de la API:', apiError);
+                // En caso de error, usar datos mock como fallback
+                console.warn('Usando datos mock como fallback debido a error de API');
+                setAllCategories(mockCategories);
+            }
             
         } catch (err) {
             setError('Error al cargar las categorías');

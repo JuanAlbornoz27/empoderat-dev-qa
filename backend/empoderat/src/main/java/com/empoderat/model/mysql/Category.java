@@ -1,5 +1,7 @@
 package com.empoderat.model.mysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,20 +18,21 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Category {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false, unique = true)
+
+    @Column(nullable = false)
     private String name;
-    
-    @Column(length = 2000)
+
     private String description;
-    
+
     @Column(name = "image_url")
     private String imageUrl;
-    
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    // Evita la serialización recursiva
+    @JsonManagedReference
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Course> courses = new ArrayList<>();
 }

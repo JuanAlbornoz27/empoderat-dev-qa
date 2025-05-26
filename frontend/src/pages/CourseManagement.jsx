@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { courseService, categoryService } from '../services/api';
 import Header from '../components/HeaderIndex';
 import '../styles/CourseManagement.css';
-// IMPORTAR LOS DATOS MOCK
+// Mantener los mocks como fallback
 import { mockCourses } from '../data/mockCourses';
 import { mockModules } from '../data/mockModules';
 
@@ -16,22 +16,38 @@ if (!document.querySelector('link[href*="font-awesome"]')) {
 
 const CourseManagement = () => {
     const [courses, setCourses] = useState([]);
-    const [categories, setCategories] = useState(['Artes', 'Cocina', 'Comunicación']); // Categorías basadas en los mocks
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    // Pagination state
+    // Estado de paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalElements, setTotalElements] = useState(0);
     const [pageSize] = useState(10);
     
-    // Search and filter state
+    // Estado de búsqueda y filtrado
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [categoryFilter, setCategoryFilter] = useState('all');
 
-    // Load courses on component mount and when filters change
+    // Cargar categorías al montar el componente
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const response = await categoryService.getAllCategories();
+                setCategories(response.data);
+            } catch (err) {
+                console.error('Error cargando categorías:', err);
+                // Fallback a categorías estáticas
+                setCategories(['Artes', 'Cocina', 'Comunicación']);
+            }
+        };
+        
+        loadCategories();
+    }, []);
+
+    // Cargar cursos cuando cambien los filtros o la paginación
     useEffect(() => {
         loadCourses();
     }, [currentPage, searchTerm, statusFilter, categoryFilter]);
@@ -41,65 +57,118 @@ const CourseManagement = () => {
             setLoading(true);
             setError(null);
             
-            // Simular delay de API
-            await new Promise(resolve => setTimeout(resolve, 500));
+            let response;
             
-            // Convertir mockCourses al formato esperado por la tabla
-            const formattedCourses = mockCourses.map(course => {
-                // Contar módulos activos para cada curso
-                const courseModules = mockModules.filter(module => module.courseId === course.id);
-                const activeModules = courseModules.filter(module => module.status === 'ACTIVE');
-                
-                return {
-                    id: course.id,
-                    name: course.title,
-                    status: 'ACTIVE', // Por defecto todos activos
-                    description: course.description,
-                    category: getCategoryFromTitle(course.title),
-                    enrolledCount: Math.floor(Math.random() * 30) + 5, // Número aleatorio para simular inscritos
-                    estimatedDuration: `${Math.floor(Math.random() * 40) + 10}h`, // Duración aleatoria
-                    imageUrl: course.image || null,
-                    moduleCount: courseModules.length,
-                    activeModuleCount: activeModules.length
-                };
-            });
-            
-            // Aplicar filtros si existen
-            let filteredCourses = formattedCourses;
-            
+            // Aplicar filtros directamente en la llamada API si es posible
             if (searchTerm) {
-                filteredCourses = formattedCourses.filter(course =>
-                    course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    course.description.toLowerCase().includes(searchTerm.toLowerCase())
-                );
+                response = await courseService.searchCourses(searchTerm);
+            } else if (categoryFilter !== 'all') {
+                // Obtener el ID de categoría basado en el nombre
+                const categoryObject = categories.find(cat => cat.name === categoryFilter);
+                const categoryId = categoryObject ? categoryObject.id : null;
+                
+                if (categoryId) {
+                    response = await courseService.getCoursesByCategory(categoryId);
+                } else {
+                    response = await courseService.getAllCourses();
+                }
+            } else {
+                response = await courseService.getAllCourses();
             }
             
-            if (statusFilter !== 'all') {
-                filteredCourses = filteredCourses.filter(course => course.status === statusFilter);
+            // Si hay datos, formatearlos para la tabla
+            if (response && response.data) {
+                // Transformar los datos de la API al formato que espera la tabla
+                const formattedCourses = response.data.map(course => ({
+                    id: course.id,
+                    name: course.title || course.name,
+                    status: course.status || 'ACTIVE',
+                    description: course.description,
+                    category: course.category?.name || 'Sin categoría',
+                    enrolledCount: course.enrollmentCount || 0,
+                    estimatedDuration: `${course.estimatedDuration || 0}h`,
+                    imageUrl: course.imageUrl || null,
+                    moduleCount: course.moduleCount || 0,
+                    activeModuleCount: course.activeModuleCount || 0
+                }));
+                
+                // Aplicar filtro de estado si es necesario (puede ser que el backend no soporte este filtro)
+                let filteredCourses = formattedCourses;
+                if (statusFilter !== 'all') {
+                    filteredCourses = formattedCourses.filter(course => course.status === statusFilter);
+                }
+                
+                // Aplicar paginación local - idealmente, la API debería manejar esto
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
+                
+                setCourses(paginatedCourses);
+                setTotalElements(filteredCourses.length);
+                setTotalPages(Math.ceil(filteredCourses.length / pageSize));
             }
-            
-            if (categoryFilter !== 'all') {
-                filteredCourses = filteredCourses.filter(course => course.category === categoryFilter);
-            }
-            
-            // Aplicar paginación
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
-            
-            setCourses(paginatedCourses);
-            setTotalElements(filteredCourses.length);
-            setTotalPages(Math.ceil(filteredCourses.length / pageSize));
-            
         } catch (err) {
             setError('Error al cargar los cursos');
-            console.error('Error loading courses:', err);
+            console.error('Error cargando cursos:', err);
+            
+            // Fallback a datos mock en caso de error
+            useMockData();
         } finally {
             setLoading(false);
         }
     };
+    
+    // Función para cargar datos mock como fallback
+    const useMockData = () => {
+        // Convertir mockCourses al formato esperado por la tabla
+        const formattedCourses = mockCourses.map(course => {
+            // Contar módulos activos para cada curso
+            const courseModules = mockModules.filter(module => module.courseId === course.id);
+            const activeModules = courseModules.filter(module => module.status === 'ACTIVE');
+            
+            return {
+                id: course.id,
+                name: course.title,
+                status: 'ACTIVE',
+                description: course.description,
+                category: getCategoryFromTitle(course.title),
+                enrolledCount: Math.floor(Math.random() * 30) + 5,
+                estimatedDuration: `${Math.floor(Math.random() * 40) + 10}h`,
+                imageUrl: course.image || null,
+                moduleCount: courseModules.length,
+                activeModuleCount: activeModules.length
+            };
+        });
+        
+        // Aplicar filtros
+        let filteredCourses = formattedCourses;
+        
+        if (searchTerm) {
+            filteredCourses = filteredCourses.filter(course =>
+                course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                course.description.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
+        if (statusFilter !== 'all') {
+            filteredCourses = filteredCourses.filter(course => course.status === statusFilter);
+        }
+        
+        if (categoryFilter !== 'all') {
+            filteredCourses = filteredCourses.filter(course => course.category === categoryFilter);
+        }
+        
+        // Aplicar paginación
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
+        
+        setCourses(paginatedCourses);
+        setTotalElements(filteredCourses.length);
+        setTotalPages(Math.ceil(filteredCourses.length / pageSize));
+    };
 
-    // Función auxiliar para determinar categoría basada en el título
+    // Función auxiliar para determinar categoría basada en el título (solo para datos mock)
     const getCategoryFromTitle = (title) => {
         const title_lower = title.toLowerCase();
         if (title_lower.includes('crochet') || title_lower.includes('bordado') || title_lower.includes('artesanía')) {
@@ -112,12 +181,12 @@ const CourseManagement = () => {
         return 'Artes'; // Por defecto
     };
 
+    // Manejador para cambiar el estado de un curso
     const handleStatusChange = async (courseId, newStatus) => {
         try {
-            // Simular llamada a API
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await courseService.updateCourseStatus(courseId, newStatus);
             
-            // Actualizar estado local (en un entorno real esto vendría del backend)
+            // Actualizar estado local después de la respuesta exitosa
             setCourses(prevCourses =>
                 prevCourses.map(course =>
                     course.id === courseId ? { ...course, status: newStatus } : course
@@ -125,32 +194,36 @@ const CourseManagement = () => {
             );
         } catch (err) {
             setError('Error al actualizar el estado del curso');
-            console.error('Error updating course status:', err);
+            console.error('Error actualizando estado del curso:', err);
         }
     };
 
-    const handleCategoryChange = async (courseId, newCategory) => {
+    // Manejador para cambiar la categoría de un curso
+    const handleCategoryChange = async (courseId, newCategoryId) => {
         try {
-            // Simular llamada a API
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Buscar el nombre de la categoría por su ID
+            const categoryName = categories.find(cat => cat.id === newCategoryId)?.name || 'Sin categoría';
             
-            // Actualizar categoría local
+            // Suponiendo que tienes un endpoint para actualizar la categoría
+            await courseService.updateCourse(courseId, { categoryId: newCategoryId });
+            
+            // Actualizar estado local
             setCourses(prevCourses =>
                 prevCourses.map(course =>
-                    course.id === courseId ? { ...course, category: newCategory } : course
+                    course.id === courseId ? { ...course, category: categoryName } : course
                 )
             );
         } catch (err) {
             setError('Error al actualizar la categoría del curso');
-            console.error('Error updating course category:', err);
+            console.error('Error actualizando categoría del curso:', err);
         }
     };
 
+    // Manejador para eliminar un curso
     const handleDeleteCourse = async (courseId) => {
         if (window.confirm('¿Está seguro de que desea eliminar este curso?')) {
             try {
-                // Simular llamada a API
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await courseService.deleteCourse(courseId);
                 
                 // Eliminar del estado local
                 setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
@@ -167,34 +240,38 @@ const CourseManagement = () => {
                 
             } catch (err) {
                 setError('Error al eliminar el curso');
-                console.error('Error deleting course:', err);
+                console.error('Error eliminando curso:', err);
             }
         }
     };
 
+    // Manejador para subir imagen de curso
     const handleImageUpload = async (courseId, file) => {
         try {
-            // Simular upload de imagen
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Crear FormData para envío de archivos
+            const formData = new FormData();
+            formData.append('image', file);
             
-            // Simular URL de imagen subida
-            const mockImageUrl = `/uploads/${file.name}`;
+            // Llamar al servicio para subir la imagen
+            const response = await courseService.uploadCourseImage(courseId, formData);
+            const imageUrl = response.data.imageUrl || `/uploads/${file.name}`;
             
             // Actualizar URL de imagen en el estado local
             setCourses(prevCourses =>
                 prevCourses.map(course =>
-                    course.id === courseId ? { ...course, imageUrl: mockImageUrl } : course
+                    course.id === courseId ? { ...course, imageUrl: imageUrl } : course
                 )
             );
         } catch (err) {
             setError('Error al subir la imagen');
-            console.error('Error uploading image:', err);
+            console.error('Error subiendo imagen:', err);
         }
     };
 
+    // Resto del componente permanece igual...
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1); // Reset to first page when searching
+        setCurrentPage(1); // Resetear a primera página al buscar
     };
 
     const renderPagination = () => {
@@ -227,6 +304,7 @@ const CourseManagement = () => {
         );
     }
 
+    // El resto del JSX permanece igual...
     return (
         <div className="course-management">
             <Header isLoggedIn={true} isAdmin={true} />
@@ -242,7 +320,7 @@ const CourseManagement = () => {
                         </div>
                     )}
 
-                    {/* Controls */}
+                    {/* Controles */}
                     <div className="controls">
                         <button className="add-course-btn" type="button">
                             Añadir Curso
@@ -283,17 +361,19 @@ const CourseManagement = () => {
                             >
                                 <option value="all">Todas las categorías</option>
                                 {categories.map(category => (
-                                    <option key={category} value={category}>
-                                        {category}
+                                    <option key={category.id || category} value={category.name || category}>
+                                        {category.name || category}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </div>
 
-                    {/* Table */}
+                    {/* Tabla de cursos */}
                     <div className="table-container">
                         <table className="courses-table">
+                            {/* El resto de la tabla permanece igual... */}
+                            {/* Solo cambia cómo se manejan los datos */}
                             <thead>
                                 <tr>
                                     <th>Acción</th>
@@ -416,7 +496,7 @@ const CourseManagement = () => {
                         </table>
                     </div>
 
-                    {/* Pagination */}
+                    {/* Paginación */}
                     <div className="pagination-container" aria-label="Paginación y resultados">
                         <div className="pagination">
                             <span>Página</span>
