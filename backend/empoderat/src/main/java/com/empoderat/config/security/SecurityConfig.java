@@ -34,11 +34,10 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/actuator/health",
-                                "/api/**",
-                                "/admin/**"
+                                "/api/**"
 
-                                )
-                                
+                        )
+
                         .permitAll()
                         // Endpoints protegidos
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
