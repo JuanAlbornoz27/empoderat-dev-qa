@@ -1,66 +1,127 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/HeaderIndex';
+import { useAuth } from '../hooks/useAuth';
+import Header from '../components/HeaderAdmin';
 import CourseCard from '../components/CourseCard';
-import { authService, courseService } from '../services/api';
+import { courseService } from '../services/api';
 import '../styles/Dashboard.css';
+import mottoImage from '../assets/motto-image.png';
+import Footer from '../components/Footer';
 
 const Dashboard = () => {
-    const [user, setUser] = useState(null);
+    const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
     const [courses, setCourses] = useState([]);
-    const [isAdmin, setIsAdmin] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const userResponse = await authService.getCurrentUser();
-                setUser(userResponse.data);
-                setIsAdmin(userResponse.data.role === 'ADMIN');
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                // Redirect to login if unauthorized
-                if (error.response && error.response.status === 401) {
-                    localStorage.removeItem('authToken');
-                    navigate('/login');
-                }
+        // Si no está autenticado, redirigir al login
+        if (!authLoading && !isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        // Si el usuario no es admin, redirigir
+        if (!authLoading && user && user.role !== 'ADMIN') {
+            navigate('/unauthorized');
+            return;
+        }
+
+        // Si tenemos usuario admin, cargar los cursos
+        if (user && user.role === 'ADMIN') {
+            loadCourses();
+        }
+    }, [user, isAuthenticated, authLoading, navigate]);
+
+    const loadCourses = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const coursesResponse = await courseService.getAllCourses();
+            setCourses(coursesResponse.data || []);
+        } catch (error) {
+            console.error('Error loading courses:', error);
+            setError('Error al cargar los cursos');
+
+            // Si es error de autenticación, hacer logout
+            if (error.response?.status === 401) {
+                await logout();
+                navigate('/login');
             }
-        };
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        const fetchCourses = async () => {
-            try {
-                const response = await courseService.getAllCourses();
-                setCourses(response.data);
-            } catch (error) {
-                console.error('Error fetching courses:', error);
-            }
-        };
-
-        fetchUserData();
-        fetchCourses();
-    }, [navigate]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            navigate('/login');
+        }
     };
 
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev === Math.ceil(courses.length / 4) - 1 ? 0 : prev + 1));
+        if (courses.length > 0) {
+            const totalSlides = Math.ceil(courses.length / 4);
+            setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
+        }
     };
 
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev === 0 ? Math.ceil(courses.length / 4) - 1 : prev - 1));
+        if (courses.length > 0) {
+            const totalSlides = Math.ceil(courses.length / 4);
+            setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
+        }
     };
 
-    if (!user) {
-        return <div className="loading">Cargando...</div>;
+    // Mostrar loading mientras se autentica
+    if (authLoading) {
+        return (
+            <div className="loading-container">
+                <div className="loading-spinner">Cargando...</div>
+            </div>
+        );
+    }
+
+    // Si no está autenticado o no es admin, no mostrar nada (ya se redirigió)
+    if (!isAuthenticated || !user || user.role !== 'ADMIN') {
+        return null;
+    }
+
+    // Mostrar loading mientras se cargan los cursos
+    if (loading) {
+        return (
+            <div className="dashboard-page">
+                <Header isLoggedIn={true} isAdmin={true} />
+                <div className="loading-container">
+                    <div className="loading-spinner">Cargando dashboard...</div>
+                </div>
+            </div>
+        );
+    }
+
+    // Mostrar error si existe
+    if (error) {
+        return (
+            <div className="dashboard-page">
+                <Header isLoggedIn={true} isAdmin={true} />
+                <div className="error-container">
+                    <h2>Error</h2>
+                    <p>{error}</p>
+                    <button onClick={loadCourses}>Reintentar</button>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="dashboard-page">
-            <Header isLoggedIn={true} isAdmin={isAdmin} />
+            <Header isLoggedIn={true} isAdmin={true} />
 
             <nav className="dashboard-nav">
                 <ul>
@@ -92,17 +153,24 @@ const Dashboard = () => {
                         <p>Te acompañamos en tu evolución</p>
                     </div>
 
-                    <div className="courses-slider">
-                        <div className="slider-controls">
-                            <button className="slider-arrow prev" onClick={prevSlide}>&#8249;</button>
-                            <div className="courses-container">
-                                {courses.slice(currentSlide * 4, (currentSlide + 1) * 4).map((course) => (
-                                    <CourseCard key={course.id} course={course} />
-                                ))}
+                    {courses.length > 0 ? (
+                        <div className="courses-slider">
+                            <div className="slider-controls">
+                                <button className="slider-arrow prev" onClick={prevSlide}>&#8249;</button>
+                                <div className="courses-container">
+                                    {courses.slice(currentSlide * 4, (currentSlide + 1) * 4).map((course) => (
+                                        <CourseCard key={course.id} course={course} />
+                                    ))}
+                                </div>
+                                <button className="slider-arrow next" onClick={nextSlide}>&#8250;</button>
                             </div>
-                            <button className="slider-arrow next" onClick={nextSlide}>&#8250;</button>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="no-courses">
+                            <p>No hay cursos disponibles</p>
+                        </div>
+                    )}
+
                     <section className="motto-section">
                         <div className="motto-content">
                             <div className="motto-text">
@@ -118,6 +186,7 @@ const Dashboard = () => {
                         </div>
                     </section>
                 </section>
+
                 <section id="about" className="about-section">
                     <h2 className="section-title">Sobre Nosotros</h2>
                     <div className="about-container">

@@ -28,11 +28,17 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const response = await login(email, password);
 
-      // Redirigir a la página anterior o al dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      // Redirección basada en el rol
+      if (response.success) {
+        const user = response.user;
+        if (user.role === 'ADMIN') {
+          navigate('/dashboard');
+        } else if (user.role === 'APRENDIZ') {
+          navigate('/cursos');
+        }
+      }
     } catch (err) {
       console.error('Login error:', err);
 

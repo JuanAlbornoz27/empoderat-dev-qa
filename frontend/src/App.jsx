@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
+import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/global.css';
 
@@ -44,7 +45,22 @@ export default function App() {
 
     fetchCourses();
   }, []);
+  const DefaultRedirect = () => {
+    const { user } = useAuth();
 
+    if (!user) {
+      return <Navigate to="/" replace />;
+    }
+
+    if (user.role === 'ADMIN') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    if (user.role === 'APRENDIZ') {
+      return <Navigate to="/cursos" replace />;
+    }
+
+    return <Navigate to="/" replace />;
+  };
   return (
     <Router>
       <AuthProvider>
@@ -56,11 +72,7 @@ export default function App() {
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Rutas protegidas generales */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
+
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
@@ -72,7 +84,12 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          Rutas protegidas para administrador
+          {/* Rutas protegidas admin */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute adminOnly>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/courses" element={
             <ProtectedRoute adminOnly>
               <CourseManagement />
@@ -127,7 +144,7 @@ export default function App() {
           } />
 
           {/* Ruta 404 */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<DefaultRedirect />} />
         </Routes>
       </AuthProvider>
     </Router>

@@ -40,7 +40,6 @@ apiClient.interceptors.response.use(
   response => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
@@ -70,9 +69,10 @@ export const authService = {
         userId: response.data.userId,
         name: response.data.name,
         email: response.data.email,
-        role: response.data.role
+        role: response.data.role.replace('ROLE_', '') // Remover el prefijo ROLE_ si existe
       }));
     }
+    console.log('Login successful:', response.data);
     return response;
   },
 

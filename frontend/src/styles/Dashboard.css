@@ -123,3 +123,87 @@
     padding: 1.5rem;
   }
 }
+
+.motto-section {
+  padding: 2rem 0;
+
+  background-color: var(--primary-color);
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.motto-content {
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  height: 200px;
+}
+
+.motto-text {
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  height: 200px;
+  flex: 0 0 30%;
+  padding-left: 10rem;
+  z-index: 2;
+}
+
+
+.motto-text h2 {
+  font-size: 2.3rem;
+  color: white;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  font-family: "Protest Riot", system-ui;
+  font-weight: 400;
+  font-style: normal;
+
+}
+
+.motto-text p {
+  font-size: 1.1rem;
+  color: white;
+  margin-top: 1rem;
+}
+
+.motto-image-container {
+  flex: 1;
+  position: relative;
+  height: 300px;
+  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+.motto-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .motto-section {
+    padding: 1rem 0;
+  }
+
+  .motto-content {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .motto-text {
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .motto-image-container {
+    width: 100%;
+    height: 250px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}

@@ -16,20 +16,34 @@ const ProtectedRoute = ({ children, requiredRole = null, adminOnly = false, apre
     }
 
     if (!isAuthenticated) {
-        // Redirigir al login y guardar la ubicación actual
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // Verificar roles específicos
+    // Verificación más estricta de roles
     if (adminOnly && user.role !== 'ADMIN') {
-        return <Navigate to="/unauthorized" replace />;
+        return <Navigate to="/cursos" replace />;
     }
 
     if (aprendizOnly && user.role !== 'APRENDIZ') {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    // Si la ruta requiere un rol específico
+    if (requiredRole && user.role !== requiredRole) {
         return <Navigate to="/unauthorized" replace />;
     }
 
-    if (requiredRole && user.role !== requiredRole) {
+    // Verificación adicional para separar completamente las rutas
+    const isAdminRoute = location.pathname.startsWith('/admin');
+    const isAprendizRoute = location.pathname.startsWith('/curso') ||
+        location.pathname.startsWith('/mis-cursos') ||
+        location.pathname === '/cursos';
+
+    if (isAdminRoute && user.role !== 'ADMIN') {
+        return <Navigate to="/unauthorized" replace />;
+    }
+
+    if (isAprendizRoute && user.role !== 'APRENDIZ') {
         return <Navigate to="/unauthorized" replace />;
     }
 
