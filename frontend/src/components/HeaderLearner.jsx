@@ -7,8 +7,13 @@ import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import empoderatLogo from "../assets/empodera-logo.png";
 import profileIcon from "../assets/profile-icon.png";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Header = ({ texto1, texto2, texto3, texto4 }) => {
+  const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -21,6 +26,16 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
     setShowUserMenu(!showUserMenu);
     setShowNotifications(false);
   };
+
+  const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            navigate('/login');
+        }
+    };
 
   return (
     <div className="header">
@@ -77,8 +92,8 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
 
         <div className="user-container">
           <div className="user-info">
-            <span className="user-name">Aprendiz</span>
-            <span className="user-role">Juanita</span>
+            <span className="user-name">{user.role}</span>
+            <span className="user-role">{user.name}</span>
           </div>
           <button className="perfil-btn" onClick={toggleUserMenu}>
             <img src={profileIcon} alt="Perfil" />
@@ -86,10 +101,12 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
           {showUserMenu && (
             <div className="user-dropdown">
               <div className="user-dropdown-header">
-                <span className="user-role">Aprendiz</span>
-                <span className="user-name">Juanita</span>
+                <span className="user-role">{user.role}</span>
+                <span className="user-name">{user.name}</span>
               </div>
-              <button className="logout-btn">Cerrar sesión</button>
+              <button className="logout-btn" onClick={handleLogout}>
+                            Cerrar sesión
+                        </button>
             </div>
           )}
         </div>
