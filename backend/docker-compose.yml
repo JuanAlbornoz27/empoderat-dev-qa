@@ -21,3 +21,4 @@ services:
 
 volumes:
   keycloak_data:
+
