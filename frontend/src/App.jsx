@@ -72,7 +72,7 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          {/* Rutas protegidas para administrador */}
+          Rutas protegidas para administrador
           <Route path="/admin/courses" element={
             <ProtectedRoute adminOnly>
               <CourseManagement />

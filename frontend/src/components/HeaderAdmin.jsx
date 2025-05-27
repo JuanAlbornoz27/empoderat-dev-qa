@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faBell } from "@fortawesome/free-solid-svg-icons";
-import "../styles/Header.css";
+import "../styles/HeaderIndex.css";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import empoderatLogo from "../assets/empodera-logo.png";
