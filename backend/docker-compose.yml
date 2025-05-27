@@ -2,16 +2,22 @@ version: '3.8'
 
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:24.0.2
+    container_name: keycloak-empoderat
+    ports:
+      - "8180:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=dev-file
+      # Ya no es necesario preview ni scripts ni authorization
     command:
       - start-dev
       - --import-realm
-    ports:
-      - "8080:8080"
-    environment:
-      # Admin console
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
-      # Sólo el JSON de tu realm, en modo lectura
+      - keycloak_data:/opt/keycloak/data
+      # Monta tu JSON limpio (sin authorizationSettings)
       - ./realm-export.json:/opt/keycloak/data/import/realm.json:ro
+
+volumes:
+  keycloak_data:
