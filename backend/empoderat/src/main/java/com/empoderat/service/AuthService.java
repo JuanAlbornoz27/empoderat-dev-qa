@@ -3,6 +3,8 @@ package com.empoderat.service;
 import com.empoderat.dto.auth.AuthRequest;
 import com.empoderat.dto.auth.AuthResponse;
 import com.empoderat.dto.auth.RegisterRequest;
+import com.empoderat.model.mysql.User;
+import com.empoderat.repository.mysql.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.util.Base64;
 
 @Service
@@ -22,6 +25,7 @@ import java.util.Base64;
 public class AuthService {
 
     private final KeycloakService keycloakService;
+    private final UserRepository userRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -92,7 +96,8 @@ public class AuthService {
 
     public String register(RegisterRequest registerRequest) {
         try {
-            return keycloakService.createUser(
+            // 1. Crear usuario en Keycloak
+            String keycloakId = keycloakService.createUser(
                     registerRequest.getName(),
                     registerRequest.getLastName(),
                     registerRequest.getEmail(),
@@ -101,6 +106,23 @@ public class AuthService {
                     registerRequest.getCity(),
                     registerRequest.getPassword(),
                     registerRequest.getBirthDate());
+
+            // 2. Crear usuario en MySQL
+            User user = User.builder()
+                    .firstName(registerRequest.getName())
+                    .lastName(registerRequest.getLastName())
+                    .email(registerRequest.getEmail())
+                    .identificationNumber(registerRequest.getDocumentNumber())
+                    .phone(registerRequest.getPhone())
+                    .city(registerRequest.getCity())
+                    .birthDate(LocalDate.parse(registerRequest.getBirthDate()))
+                    .keycloakId(keycloakId)
+                    .build();
+
+            userRepository.save(user);
+            log.info("Usuario guardado en MySQL con ID: {}", user.getId());
+
+            return keycloakId;
         } catch (Exception e) {
             log.error("Error en registro: ", e);
             throw new RuntimeException("Error al registrar usuario: " + e.getMessage());
