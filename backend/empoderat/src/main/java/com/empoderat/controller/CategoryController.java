@@ -5,6 +5,7 @@ import com.empoderat.model.mysql.Category;
 import com.empoderat.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,20 @@ public class CategoryController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar categoría", description = "Actualiza los datos de una categoría existente")
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
+            @RequestBody Category updatedCategory) {
+        try {
+            CategoryResponse category = categoryService.updateCategory(id, updatedCategory);
+            return ResponseEntity.ok(category);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

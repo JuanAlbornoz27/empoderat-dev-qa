@@ -303,13 +303,7 @@ const ModuleManagement = () => {
                                                     modules.map((module) => (
                                                         <tr key={module.id}>
                                                             <td className="actions-cell">
-                                                                <button
-                                                                    className="action-btn info-btn"
-                                                                    aria-label={`Información módulo ${module.id}`}
-                                                                    title="Ver información"
-                                                                >
-                                                                    <i className="fas fa-info"></i>
-                                                                </button>
+
                                                                 <button
                                                                     className="action-btn edit-btn"
                                                                     aria-label={`Editar módulo ${module.id}`}

@@ -43,4 +43,24 @@ public class CategoryService {
 
         categoryRepository.deleteById(id);
     }
+
+    public CategoryResponse updateCategory(Long id, Category updatedCategory) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró la categoría con ID: " + id));
+        
+        // Verificar si el nombre actualizado ya existe en otra categoría
+        if (!existingCategory.getName().equals(updatedCategory.getName()) && 
+                categoryRepository.existsByName(updatedCategory.getName())) {
+            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + updatedCategory.getName());
+        }
+        
+        // Actualizar campos
+        existingCategory.setName(updatedCategory.getName());
+        existingCategory.setDescription(updatedCategory.getDescription());
+        existingCategory.setImageUrl(updatedCategory.getImageUrl());
+        
+        // Guardar cambios
+        Category savedCategory = categoryRepository.save(existingCategory);
+        return CategoryResponse.fromEntity(savedCategory);
+    }
 }
