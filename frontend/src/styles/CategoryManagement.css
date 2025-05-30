@@ -305,6 +305,45 @@
     color: #4B2A7B;
 }
 
+/* Estilos para la nueva fila de categoría */
+.new-category-row {
+  background-color: rgba(0, 123, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.new-category-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.description-input {
+  height: 70px;
+  resize: vertical;
+}
+
+.new-id {
+  font-style: italic;
+  color: #777;
+}
+
+.disabled-link {
+  color: #999;
+  font-style: italic;
+}
+
+.save-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .content-container {
