@@ -133,13 +133,22 @@ export const categoryService = {
 
 // Servicio de módulos
 export const moduleService = {
+  // Obtención de módulos
   getModulesByCourse: (courseId) => apiClient.get(`/modules/course/${courseId}`),
   getModuleById: (id) => apiClient.get(`/modules/${id}`),
+  getAllModules: () => apiClient.get('/modules'),
+  searchModules: (term) => apiClient.get('/modules/search', { params: { term } }),
+  
+  // Operaciones CRUD
   createModule: (moduleData) => apiClient.post('/modules', moduleData),
   updateModule: (id, moduleData) => apiClient.put(`/modules/${id}`, moduleData),
   deleteModule: (id) => apiClient.delete(`/modules/${id}`),
+  
+  // Actualización de estado
   updateModuleStatus: (id, status) => apiClient.patch(`/modules/${id}/status`, { status }),
-  uploadModuleResource: (id, formData) => apiClient.post(`/modules/${id}/resource`, formData, {
+  
+  // Upload de recursos y archivos
+  uploadModuleImage: (id, formData) => apiClient.post(`/modules/${id}/image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 };

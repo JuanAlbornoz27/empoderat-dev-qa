@@ -5,11 +5,11 @@ import com.empoderat.model.mysql.Category;
 import com.empoderat.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,5 +26,41 @@ public class CategoryController {
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
         List<CategoryResponse> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
+    }
+
+    @PostMapping
+    @Operation(summary = "Crear nueva categoría", description = "Crea una nueva categoría con los datos proporcionados")
+    public ResponseEntity<CategoryResponse> createCategory(@RequestBody Category category) {
+        try {
+            CategoryResponse createdCategory = categoryService.createCategory(category);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar categoría", description = "Elimina una categoría por su ID")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        try {
+            categoryService.deleteCategory(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar categoría", description = "Actualiza los datos de una categoría existente")
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
+            @RequestBody Category updatedCategory) {
+        try {
+            CategoryResponse category = categoryService.updateCategory(id, updatedCategory);
+            return ResponseEntity.ok(category);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

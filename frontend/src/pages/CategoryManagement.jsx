@@ -22,6 +22,21 @@ const CategoryManagement = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+
+    const [newCategory, setNewCategory] = useState({
+        name: '',
+        description: '',
+        imageUrl: ''
+    });
+
+    // Estados para edición de categorías
+    const [editingCategoryId, setEditingCategoryId] = useState(null);
+    const [editingCategoryData, setEditingCategoryData] = useState({
+        name: '',
+        description: '',
+        imageUrl: ''
+    });
 
     // Cargar datos iniciales solo una vez
     useEffect(() => {
@@ -103,8 +118,8 @@ const CategoryManagement = () => {
     const handleDeleteCategory = async (categoryId) => {
         if (window.confirm('¿Está seguro de que desea eliminar esta categoría?')) {
             try {
-                // Simular llamada a API (sin delay largo para mejor UX)
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Llamada real a la API
+                await categoryService.deleteCategory(categoryId);
                 
                 // Eliminar de todos los datos
                 setAllCategories(prevCategories => 
@@ -147,6 +162,168 @@ const CategoryManagement = () => {
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
+    };
+
+    //Handle para añadir una nueva categoría
+    const handleAddCategoryClick = () => {
+        setIsAddingCategory(true);
+        setNewCategory({
+            name: '',
+            description: '',
+            imageUrl: ''
+        });
+    };
+
+    const handleNewCategoryChange = (field, value) => {
+        setNewCategory(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSaveNewCategory = async () => {
+        try {
+            // Validar datos
+            if (!newCategory.name.trim()) {
+                alert('El nombre de la categoría es obligatorio');
+                return;
+            }
+            
+            // Crear el objeto JSON simplificado para enviar a la API
+            const categoryJson = {
+                name: newCategory.name,
+                description: newCategory.description,
+                imageUrl: newCategory.imageUrl
+            };
+            
+            console.log('Enviando a API:', categoryJson);
+            
+            // Aquí iría la llamada a la API para guardar la categoría
+            try {
+                const response = await categoryService.createCategory(categoryJson);
+                
+                // Si la llamada es exitosa, actualizar con los datos de la respuesta
+                if (response && response.data) {
+                    const savedCategory = {
+                        id: response.data.id,
+                        name: response.data.name,
+                        description: response.data.description || '',
+                        courseCount: 0,
+                        imageUrl: response.data.imageUrl || ''
+                    };
+                    
+                    // Actualizar el estado local con la respuesta del servidor
+                    setAllCategories(prev => [...prev, savedCategory]);
+                } else {
+                    // Continuar con la lógica existente (crear localmente si la API falla)
+                    const nextId = allCategories.length > 0 
+                        ? Math.max(...allCategories.map(cat => parseInt(cat.id))) + 1 
+                        : 1;
+                        
+                    const categoryToSave = {
+                        ...newCategory,
+                        id: nextId.toString(),
+                        courseCount: 0
+                    };
+                    
+                    // Actualizar el estado local
+                    setAllCategories(prev => [...prev, categoryToSave]);
+                }
+                
+                // Reiniciar el estado de añadir
+                setIsAddingCategory(false);
+                setNewCategory({ name: '', description: '', imageUrl: '' });
+                
+            } catch (err) {
+                setError('Error al guardar la categoría');
+                console.error('Error saving category:', err);
+            }
+        } catch (err) {
+            setError('Error al guardar la categoría');
+            console.error('Error saving category:', err);
+        }
+    };
+
+    const handleCancelNewCategory = () => {
+        setIsAddingCategory(false);
+    };
+
+    // Añadir después de handleCancelNewCategory
+    const handleEditCategory = (category) => {
+        // Iniciar la edición con los datos actuales de la categoría
+        setEditingCategoryId(category.id);
+        setEditingCategoryData({
+            name: category.name,
+            description: category.description,
+            imageUrl: category.imageUrl || ''
+        });
+    };
+
+    const handleEditingCategoryChange = (field, value) => {
+        setEditingCategoryData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSaveEditedCategory = async () => {
+        // Validar datos
+        if (!editingCategoryData.name.trim()) {
+            alert('El nombre de la categoría es obligatorio');
+            return;
+        }
+        
+        try {
+            // Crear el objeto JSON simplificado para enviar a la API
+            const categoryJson = {
+                name: editingCategoryData.name,
+                description: editingCategoryData.description,
+                imageUrl: editingCategoryData.imageUrl
+            };
+            
+            console.log('Enviando a API datos editados:', categoryJson);
+            
+            // Llamada a la API para actualizar la categoría
+            const response = await categoryService.updateCategory(editingCategoryId, categoryJson);
+            
+            // Si la llamada es exitosa, actualizar el estado local
+            if (response && response.data) {
+                const updatedCategory = {
+                    id: editingCategoryId,
+                    name: response.data.name,
+                    description: response.data.description || '',
+                    imageUrl: response.data.imageUrl || '',
+                    // Conservar el courseCount existente
+                    courseCount: allCategories.find(c => c.id === editingCategoryId)?.courseCount || 0
+                };
+                
+                // Actualizar el estado local con la respuesta del servidor
+                setAllCategories(prevCategories =>
+                    prevCategories.map(category =>
+                        category.id === editingCategoryId ? updatedCategory : category
+                    )
+                );
+            } else {
+                // Fallback: actualizar solo con los datos locales si la API no devuelve datos
+                setAllCategories(prevCategories =>
+                    prevCategories.map(category =>
+                        category.id === editingCategoryId
+                            ? { ...category, ...editingCategoryData }
+                            : category
+                    )
+                );
+            }
+            
+            // Salir del modo edición
+            setEditingCategoryId(null);
+        } catch (err) {
+            setError('Error al actualizar la categoría');
+            console.error('Error updating category:', err);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingCategoryId(null);
     };
 
     const renderPagination = () => {
@@ -205,7 +382,8 @@ const CategoryManagement = () => {
 
                     {/* Controls */}
                     <div className="controls">
-                        <button className="add-category-btn" type="button">
+                        {/* Actualiza el botón existente añadiendo el onClick */}
+                        <button className="add-category-btn" type="button" onClick={handleAddCategoryClick}>
                             Añadir Categoría
                         </button>
                         
@@ -246,39 +424,76 @@ const CategoryManagement = () => {
                                     categories.map((category) => (
                                         <tr key={category.id}>
                                             <td className="actions-cell">
-                                                <button
-                                                    className="action-btn info-btn"
-                                                    aria-label={`Información categoría ${category.id}`}
-                                                    title="Ver información"
-                                                >
-                                                    <i className="fas fa-info"></i>
-                                                </button>
-                                                <button
-                                                    className="action-btn edit-btn"
-                                                    aria-label={`Editar categoría ${category.id}`}
-                                                    title="Editar categoría"
-                                                >
-                                                    <i className="fas fa-pencil-alt"></i>
-                                                </button>
-                                                <button
-                                                    className="action-btn delete-btn"
-                                                    aria-label={`Eliminar categoría ${category.id}`}
-                                                    title="Eliminar categoría"
-                                                    onClick={() => handleDeleteCategory(category.id)}
-                                                >
-                                                    <i className="fas fa-trash"></i>
-                                                </button>
+                                                {editingCategoryId === category.id ? (
+                                                    <>
+                                                        <button
+                                                            className="action-btn save-btn"
+                                                            aria-label="Guardar categoría"
+                                                            title="Guardar cambios"
+                                                            onClick={handleSaveEditedCategory}
+                                                        >
+                                                            <i className="fas fa-save"></i>
+                                                        </button>
+                                                        <button
+                                                            className="action-btn cancel-btn"
+                                                            aria-label="Cancelar edición"
+                                                            title="Cancelar"
+                                                            onClick={handleCancelEdit}
+                                                        >
+                                                            <i className="fas fa-times"></i>
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            className="action-btn edit-btn"
+                                                            aria-label={`Editar categoría ${category.id}`}
+                                                            title="Editar categoría"
+                                                            onClick={() => handleEditCategory(category)}
+                                                        >
+                                                            <i className="fas fa-pencil-alt"></i>
+                                                        </button>
+                                                        <button
+                                                            className="action-btn delete-btn"
+                                                            aria-label={`Eliminar categoría ${category.id}`}
+                                                            title="Eliminar categoría"
+                                                            onClick={() => handleDeleteCategory(category.id)}
+                                                        >
+                                                            <i className="fas fa-trash"></i>
+                                                        </button>
+                                                    </>
+                                                )}
                                             </td>
                                             <td>{category.id}</td>
-                                            <td>{category.name}</td>
-                                            <td 
-                                                className="description-cell"
-                                                title={category.description}
-                                            >
-                                                {category.description.length > 50 
-                                                    ? `${category.description.substring(0, 50)}...` 
-                                                    : category.description
-                                                }
+                                            <td>
+                                                {editingCategoryId === category.id ? (
+                                                    <input
+                                                        type="text"
+                                                        className="new-category-input"
+                                                        value={editingCategoryData.name}
+                                                        onChange={(e) => handleEditingCategoryChange('name', e.target.value)}
+                                                        aria-label="Nombre de la categoría"
+                                                    />
+                                                ) : (
+                                                    category.name
+                                                )}
+                                            </td>
+                                            <td className="description-cell">
+                                                {editingCategoryId === category.id ? (
+                                                    <textarea
+                                                        className="new-category-input description-input"
+                                                        value={editingCategoryData.description}
+                                                        onChange={(e) => handleEditingCategoryChange('description', e.target.value)}
+                                                        aria-label="Descripción de la categoría"
+                                                    />
+                                                ) : (
+                                                    <span title={category.description}>
+                                                        {category.description.length > 50 
+                                                            ? `${category.description.substring(0, 50)}...` 
+                                                            : category.description
+                                                        }
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="text-center">{category.courseCount || 0}</td>
                                             <td className="image-cell">
@@ -286,9 +501,14 @@ const CategoryManagement = () => {
                                                     <input
                                                         type="text"
                                                         placeholder="img.png"
-                                                        value={category.imageUrl || ''}
-                                                        readOnly
+                                                        value={editingCategoryId === category.id 
+                                                            ? editingCategoryData.imageUrl || '' 
+                                                            : category.imageUrl || ''}
+                                                        readOnly={editingCategoryId !== category.id}
                                                         className="image-input"
+                                                        onChange={editingCategoryId === category.id 
+                                                            ? (e) => handleEditingCategoryChange('imageUrl', e.target.value) 
+                                                            : undefined}
                                                         aria-label={`Portada categoría ${category.id}`}
                                                     />
                                                     <label className="upload-btn" title="Subir imagen">
@@ -297,7 +517,12 @@ const CategoryManagement = () => {
                                                             accept="image/*"
                                                             onChange={(e) => {
                                                                 if (e.target.files[0]) {
-                                                                    handleImageUpload(category.id, e.target.files[0]);
+                                                                    if (editingCategoryId === category.id) {
+                                                                        const mockImageUrl = `/uploads/${e.target.files[0].name}`;
+                                                                        handleEditingCategoryChange('imageUrl', mockImageUrl);
+                                                                    } else {
+                                                                        handleImageUpload(category.id, e.target.files[0]);
+                                                                    }
                                                                 }
                                                             }}
                                                             style={{ display: 'none' }}
@@ -316,6 +541,85 @@ const CategoryManagement = () => {
                                             </td>
                                         </tr>
                                     ))
+                                )}
+                                {isAddingCategory && (
+                                    <tr className="new-category-row">
+                                        <td className="actions-cell">
+                                            <button
+                                                className="action-btn save-btn"
+                                                aria-label="Guardar nueva categoría"
+                                                title="Guardar categoría"
+                                                onClick={handleSaveNewCategory}
+                                            >
+                                                <i className="fas fa-save"></i>
+                                            </button>
+                                            <button
+                                                className="action-btn cancel-btn"
+                                                aria-label="Cancelar nueva categoría"
+                                                title="Cancelar"
+                                                onClick={handleCancelNewCategory}
+                                            >
+                                                <i className="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <span className="new-id">
+                                                {allCategories.length > 0 
+                                                    ? Math.max(...allCategories.map(cat => parseInt(cat.id))) + 1 
+                                                    : 1}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="new-category-input"
+                                                placeholder="Nombre de la categoría"
+                                                value={newCategory.name}
+                                                onChange={(e) => handleNewCategoryChange('name', e.target.value)}
+                                                aria-label="Nombre de la categoría"
+                                            />
+                                        </td>
+                                        <td>
+                                            <textarea
+                                                className="new-category-input description-input"
+                                                placeholder="Descripción de la categoría"
+                                                value={newCategory.description}
+                                                onChange={(e) => handleNewCategoryChange('description', e.target.value)}
+                                                aria-label="Descripción de la categoría"
+                                            />
+                                        </td>
+                                        <td className="text-center">0</td>
+                                        <td className="image-cell">
+                                            <div className="image-container">
+                                                <input
+                                                    type="text"
+                                                    placeholder="img.png"
+                                                    value={newCategory.imageUrl || ''}
+                                                    className="image-input"
+                                                    readOnly
+                                                    aria-label="Portada nueva categoría"
+                                                />
+                                                <label className="upload-btn" title="Subir imagen">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            if (e.target.files[0]) {
+                                                                // Simular subida de imagen
+                                                                const mockImageUrl = `/uploads/${e.target.files[0].name}`;
+                                                                handleNewCategoryChange('imageUrl', mockImageUrl);
+                                                            }
+                                                        }}
+                                                        style={{ display: 'none' }}
+                                                    />
+                                                    <i className="fas fa-upload"></i>
+                                                </label>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <span className="disabled-link">Disponible al guardar</span>
+                                        </td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
