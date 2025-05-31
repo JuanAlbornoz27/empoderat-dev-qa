@@ -303,8 +303,7 @@ const CourseManagement = () => {
             </div>
         );
     }
-
-    // El resto del JSX permanece igual...
+    
     return (
         <div className="course-management">
             <Header isLoggedIn={true} isAdmin={true} />

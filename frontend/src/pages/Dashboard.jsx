@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Header from '../components/HeaderAdmin';
+import Header from '../components/HeaderLearner';
 import CourseCard from '../components/CourseCard';
 import { courseService } from '../services/api';
 import '../styles/Dashboard.css';
@@ -121,29 +121,35 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-page">
-            <Header isLoggedIn={true} isAdmin={true} />
+            {/* <Header isLoggedIn={true} isAdmin={true} /> */}
 
             <nav className="dashboard-nav">
-                <ul>
+                {/* <ul>
                     <li><a href="#categorias">Categorías</a></li>
                     <li><a href="#cursos">Cursos</a></li>
                     <li><a href="#modulos">Módulos</a></li>
                     <li><a href="#estadisticas">Estadísticas</a></li>
                     <li><a href="#contactanos">Contáctanos</a></li>
-                </ul>
+                </ul> */}
+                <Header
+                    texto1="Categorías"
+                    texto2="Cursos"
+                    texto3="Módulos"
+                    texto4="Estadísticas"
+                />
 
-                <div className="user-panel">
+                {/* <div className="user-panel">
                     <div className="user-avatar">
                         <img src="/default-avatar.png" alt="Avatar" />
                     </div>
                     <div className="user-info">
-                        <div className="user-role">Administrador</div>
+                        <div className="user-role">{user.role}</div>
                         <div className="user-name">{user.name}</div>
                         <button className="logout-btn" onClick={handleLogout}>
                             Cerrar sesión
                         </button>
                     </div>
-                </div>
+                </div> */}
             </nav>
 
             <main>
