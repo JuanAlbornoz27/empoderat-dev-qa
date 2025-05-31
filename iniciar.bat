@@ -42,3 +42,11 @@ echo =======================================================
 
 REM Opcionalmente, iniciar el primer terminal automáticamente
 start "" "%BASE_DIR%temp_keycloak.bat"
+start "" "%BASE_DIR%temp_backend.bat"
+start "" "%BASE_DIR%temp_frontend.bat"
+REM Limpiar scripts temporales al salir
+del "%BASE_DIR%temp_keycloak.bat"
+del "%BASE_DIR%temp_backend.bat"
+del "%BASE_DIR%temp_frontend.bat"
+pause
+exit
