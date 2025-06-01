@@ -157,7 +157,7 @@ export const moduleService = {
 export const userService = {
   getProfile: () => apiClient.get('/user/profile'),
   getProfileByEmail: (email) => apiClient.get(`/user/profile/email/${email}`),
-  updateProfile: (data) => apiClient.put('/user/profile', data),
+  updateProfile: (data) => apiClient.put('/user/profile/update', data),
   uploadProfileImage: (formData) => apiClient.post('/user/profile/image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })

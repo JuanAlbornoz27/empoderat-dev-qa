@@ -8,6 +8,7 @@ const ProfileInfo = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   
   // Estado para manejar los datos del usuario
   const [usuario, setUsuario] = useState({
@@ -102,15 +103,23 @@ const ProfileInfo = () => {
   const handleGuardarCambios = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      // Formatear la fecha si es necesario
+      let formattedDate = usuarioTemporal.fechaNacimiento;
+      // Código de formateo de fecha si es necesario...
       
       // Preparar datos para enviar al servidor
       const userData = {
         firstName: usuarioTemporal.nombre,
         lastName: usuarioTemporal.apellido,
         phone: usuarioTemporal.telefono,
-        birthDate: usuarioTemporal.fechaNacimiento,
-        city: usuarioTemporal.ciudad
+        birthDate: formattedDate,
+        city: usuarioTemporal.ciudad,
+        email: usuario.email // Incluir el email para identificar al usuario
       };
+      
+      console.log('Enviando datos para actualizar:', userData);
       
       // Enviar los datos al servidor
       const response = await userService.updateProfile(userData);
@@ -129,12 +138,18 @@ const ProfileInfo = () => {
         });
         
         console.log('Perfil actualizado:', response.data);
+        setSuccess('Perfil actualizado correctamente');
+        
+        // Limpiar mensaje de éxito después de 3 segundos
+        setTimeout(() => {
+          setSuccess(null);
+        }, 3000);
       }
       
       setModoEdicion(false);
     } catch (error) {
       console.error('Error al guardar cambios:', error);
-      setError('No se pudieron guardar los cambios');
+      setError('No se pudieron guardar los cambios. Por favor intenta nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -181,9 +196,23 @@ const ProfileInfo = () => {
             avatar: response.data.imageUrl
           }));
           
+          // Actualizar también el estado principal
+          setUsuario(prev => ({
+            ...prev,
+            avatar: response.data.imageUrl
+          }));
+          
+          setSuccess('Imagen de perfil actualizada correctamente');
+          setTimeout(() => {
+            setSuccess(null);
+          }, 3000);
         }
       } catch (error) {
         console.error('Error al subir imagen:', error);
+        setError('No se pudo subir la imagen. Por favor intenta nuevamente.');
+        setTimeout(() => {
+          setError(null);
+        }, 3000);
       } finally {
         setLoading(false);
       }
@@ -207,6 +236,8 @@ const ProfileInfo = () => {
           <div className="error-message">{error}</div>
         ) : (
           <div className="perfil-card">
+            {success && <div className="success-message">{success}</div>}
+            
             <div className="perfil-avatar-section">
               <div className="perfil-avatar">
                 {datosUsuario.avatar ? (
@@ -273,30 +304,12 @@ const ProfileInfo = () => {
 
               <div className="campo-grupo">
                 <label className="campo-label">Email</label>
-                {modoEdicion ? (
-                  <input
-                    type="email"
-                    value={datosUsuario.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="campo-input"
-                  />
-                ) : (
-                  <div className="campo-valor">{datosUsuario.email}</div>
-                )}
+                <div className="campo-valor">{datosUsuario.email}</div>
               </div>
 
               <div className="campo-grupo">
                 <label className="campo-label">Cédula</label>
-                {modoEdicion ? (
-                  <input
-                    type="text"
-                    value={datosUsuario.cedula}
-                    onChange={(e) => handleInputChange('cedula', e.target.value)}
-                    className="campo-input"
-                  />
-                ) : (
-                  <div className="campo-valor">{datosUsuario.cedula}</div>
-                )}
+                <div className="campo-valor">{datosUsuario.cedula}</div>
               </div>
 
               <div className="campo-grupo">
@@ -317,11 +330,10 @@ const ProfileInfo = () => {
                 <label className="campo-label">Fecha de Nacimiento</label>
                 {modoEdicion ? (
                   <input
-                    type="text"
+                    type="date"
                     value={datosUsuario.fechaNacimiento}
                     onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
                     className="campo-input"
-                    placeholder="DD/MM/AA"
                   />
                 ) : (
                   <div className="campo-valor">{datosUsuario.fechaNacimiento}</div>

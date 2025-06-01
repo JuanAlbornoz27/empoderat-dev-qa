@@ -136,6 +136,7 @@
   background-color: white;
   outline: none;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .campo-input:focus {
@@ -172,6 +173,7 @@
 .acciones-edicion {
   display: flex;
   gap: 1rem;
+  justify-content: flex-end;
 }
 
 .btn-cancelar {
@@ -186,6 +188,7 @@
   font-size: 1rem;
   transition: all 0.2s ease;
   outline: none;
+  margin-right: 1rem;
 }
 
 .btn-cancelar:hover {
@@ -218,6 +221,84 @@
 .btn-guardar:focus {
   outline: none;
   box-shadow: 0 0 0 0.1875rem rgba(58, 0, 117, 0.2);
+}
+
+/* Mensajes de éxito y error */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #c3e6cb;
+  text-align: center;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: #815896;
+  font-weight: bold;
+}
+
+/* Mejoras para los botones */
+.btn-editar, .btn-guardar, .btn-cancelar {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-editar, .btn-guardar {
+  background-color: #815896;
+  color: white;
+  border: none;
+}
+
+.btn-editar:hover, .btn-guardar:hover {
+  background-color: #6a4578;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-cancelar {
+  background-color: #f8f9fa;
+  color: #212529;
+  border: 1px solid #ddd;
+  margin-right: 1rem;
+}
+
+.btn-cancelar:hover {
+  background-color: #e9ecef;
+}
+
+/* Estilos para inputs en modo edición */
+.campo-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.campo-input:focus {
+  border-color: #815896;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(129, 88, 150, 0.25);
 }
 
 /* Responsive Design */

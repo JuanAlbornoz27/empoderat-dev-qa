@@ -44,14 +44,27 @@ public class UserController {
         return ResponseEntity.ok(userProfile);
     }
 
-    @PutMapping("/profile")
+    @PutMapping("/profile/update")
     @Operation(
         summary = "Actualizar perfil de usuario", 
-        description = "Actualiza los datos del perfil del usuario autenticado",
+        description = "Actualiza los datos del perfil del usuario usando el email proporcionado o el token JWT",
         security = @SecurityRequirement(name = "jwt")
     )
     public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestBody UserProfileRequest userProfileRequest) {
+        log.info("Recibida solicitud para actualizar perfil: {}", userProfileRequest);
+        
+        // Validar que al menos un campo actualizable venga en la solicitud
+        if ((userProfileRequest.getFirstName() == null || userProfileRequest.getFirstName().isEmpty()) &&
+            (userProfileRequest.getLastName() == null || userProfileRequest.getLastName().isEmpty()) &&
+            (userProfileRequest.getPhone() == null || userProfileRequest.getPhone().isEmpty()) &&
+            (userProfileRequest.getBirthDate() == null || userProfileRequest.getBirthDate().isEmpty()) &&
+            (userProfileRequest.getCity() == null || userProfileRequest.getCity().isEmpty())) {
+            
+            return ResponseEntity.badRequest().build();
+        }
+        
         UserProfileResponse updatedProfile = userService.updateUserProfile(userProfileRequest);
+        log.info("Perfil actualizado correctamente: {}", updatedProfile);
         return ResponseEntity.ok(updatedProfile);
     }
 
