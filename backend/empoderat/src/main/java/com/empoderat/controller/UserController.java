@@ -22,21 +22,45 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/profile")
-    @Operation(summary = "Obtener perfil de usuario", description = "Devuelve los datos del perfil del usuario autenticado", security = @SecurityRequirement(name = "jwt"))
+    @Operation(
+        summary = "Obtener perfil de usuario", 
+        description = "Devuelve los datos del perfil del usuario autenticado",
+        security = @SecurityRequirement(name = "jwt")
+    )
     public ResponseEntity<UserProfileResponse> getUserProfile() {
         UserProfileResponse userProfile = userService.getCurrentUserProfile();
         return ResponseEntity.ok(userProfile);
     }
+    
+    @GetMapping("/profile/email/{email}")
+    @Operation(
+        summary = "Obtener perfil por email", 
+        description = "Devuelve los datos del perfil del usuario por su email",
+        security = @SecurityRequirement(name = "jwt")
+    )
+    public ResponseEntity<UserProfileResponse> getUserProfileByEmail(@PathVariable String email) {
+        log.info("Obteniendo perfil para usuario con email: {}", email);
+        UserProfileResponse userProfile = userService.getUserProfileByEmail(email);
+        return ResponseEntity.ok(userProfile);
+    }
 
     @PutMapping("/profile")
-    @Operation(summary = "Actualizar perfil de usuario", description = "Actualiza los datos del perfil del usuario autenticado", security = @SecurityRequirement(name = "jwt"))
+    @Operation(
+        summary = "Actualizar perfil de usuario", 
+        description = "Actualiza los datos del perfil del usuario autenticado",
+        security = @SecurityRequirement(name = "jwt")
+    )
     public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestBody UserProfileRequest userProfileRequest) {
         UserProfileResponse updatedProfile = userService.updateUserProfile(userProfileRequest);
         return ResponseEntity.ok(updatedProfile);
     }
 
     @PostMapping("/profile/image")
-    @Operation(summary = "Subir imagen de perfil", description = "Sube una nueva imagen de perfil para el usuario", security = @SecurityRequirement(name = "jwt"))
+    @Operation(
+        summary = "Subir imagen de perfil", 
+        description = "Sube una nueva imagen de perfil para el usuario",
+        security = @SecurityRequirement(name = "jwt")
+    )
     public ResponseEntity<UserProfileResponse> uploadProfileImage(@RequestParam("image") MultipartFile image) {
         UserProfileResponse updatedProfile = userService.updateProfileImage(image);
         return ResponseEntity.ok(updatedProfile);

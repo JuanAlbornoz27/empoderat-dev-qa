@@ -68,8 +68,8 @@ export const authService = {
       localStorage.setItem('userInfo', JSON.stringify({
         userId: response.data.userId,
         name: response.data.name,
-        email: response.data.email,
-        role: response.data.role.replace('ROLE_', '') // Remover el prefijo ROLE_ si existe
+        email: response.data.email, 
+        role: response.data.role.replace('ROLE_', '') 
       }));
     }
     console.log('Login successful:', response.data);
@@ -156,6 +156,7 @@ export const moduleService = {
 // Servicio de usuario
 export const userService = {
   getProfile: () => apiClient.get('/user/profile'),
+  getProfileByEmail: (email) => apiClient.get(`/user/profile/email/${email}`),
   updateProfile: (data) => apiClient.put('/user/profile', data),
   uploadProfileImage: (formData) => apiClient.post('/user/profile/image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }

@@ -29,6 +29,18 @@ public class UserService {
         User user = getCurrentUser();
         return mapUserToProfileResponse(user);
     }
+    
+    // Método para obtener perfil por email
+    public UserProfileResponse getUserProfileByEmail(String email) {
+        log.info("Buscando usuario por email: {}", email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("Usuario no encontrado con email: {}", email);
+                    return new EntityNotFoundException("Usuario no encontrado con email: " + email);
+                });
+        log.info("Usuario encontrado: {}", user.getId());
+        return mapUserToProfileResponse(user);
+    }
 
     public UserProfileResponse updateUserProfile(UserProfileRequest request) {
         User user = getCurrentUser();

@@ -74,6 +74,7 @@ public class AuthService {
                 // Decodificar JWT para obtener información del usuario
                 String accessToken = tokenResponse.get("access_token").asText();
                 JsonNode userInfo = decodeJWT(accessToken);
+                
 
                 return AuthResponse.builder()
                         .accessToken(accessToken)
