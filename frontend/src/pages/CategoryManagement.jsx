@@ -533,7 +533,7 @@ const CategoryManagement = () => {
                                             </td>
                                             <td className="text-center">
                                                 <a
-                                                    href={`/admin/courses/category/${category.id}`}
+                                                    href={`/admin/courses?category=${category.id}`}
                                                     className="courses-link"
                                                 >
                                                     Administrar cursos

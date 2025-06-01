@@ -81,6 +81,18 @@ const CourseManagement = () => {
         loadCategoriesAsync();
     }, []);
 
+    // Añadir en la parte superior del componente, justo después de declarar los estados
+    useEffect(() => {
+        // Extraer parámetros de la URL
+        const queryParams = new URLSearchParams(window.location.search);
+        const categoryParam = queryParams.get('category');
+        
+        // Si existe un parámetro de categoría, establecer el filtro
+        if (categoryParam) {
+            setCategoryFilter(categoryParam);
+        }
+    }, []);
+
     const getCategoryNameById = useCallback((categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         return category ? category.name : 'Sin categoría';
@@ -548,7 +560,7 @@ const CourseManagement = () => {
                                                 <td className="actions-cell">
                                                     {/* <button className="action-btn info-btn" title="Ver información"><i className="fas fa-info"></i></button> */}
                                                     <button className="action-btn edit-btn" title="Editar curso" onClick={() => handleEditCourseClick(course)}  disabled={isAddingCourse || editingCourseId}><i className="fas fa-pencil-alt"></i></button>
-                                                    <button className="action-btn delete-btn" title="Eliminar curso" onClick={() => handleDeleteCourse(course.id)} disabled={isAddingCourse || editingCourseId}><i className="fas fa-trash"></i></button>
+                                                    <button className="action-btn " title="Eliminar curso" onClick={() => handleDeleteCourse(course.id)} disabled={isAddingCourse || editingCourseId}><i className="fas fa-trash"></i></button>
                                                 </td>
                                                 <td>{course.id}</td>
                                                 <td>{course.name}</td>
