@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { courseService, categoryService } from '../services/api';
 import Header from '../components/HeaderIndex';
 import '../styles/CourseManagement.css';
@@ -19,119 +19,156 @@ const CourseManagement = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+    const [successMessage, setSuccessMessage] = useState('');
+
     // Estado de paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalElements, setTotalElements] = useState(0);
     const [pageSize] = useState(10);
-    
+
     // Estado de búsqueda y filtrado
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [categoryFilter, setCategoryFilter] = useState('all');
 
+    // Estado para añadir y editar cursos
+    const [isAddingCourse, setIsAddingCourse] = useState(false);
+    const [newCourseData, setNewCourseData] = useState({
+        name: '',
+        description: '',
+        categoryId: '',
+        status: 'ACTIVE',
+        estimatedDuration: '10h', 
+        imageUrl: ''
+    });
+
+    const [editingCourseId, setEditingCourseId] = useState(null);
+    const [editingCourseData, setEditingCourseData] = useState({
+        id: null,
+        name: '',
+        description: '',
+        categoryId: '',
+        status: 'ACTIVE',
+        estimatedDuration: '',
+        imageUrl: ''
+    });
+
     // Cargar categorías al montar el componente
     useEffect(() => {
-        const loadCategories = async () => {
+        const loadCategoriesAsync = async () => {
             try {
                 const response = await categoryService.getAllCategories();
-                setCategories(response.data);
+                setCategories(response.data || []);
+                if (response.data && response.data.length > 0) {
+                    // Establecer categoría por defecto para nuevo curso si las categorías se cargan
+                    setNewCourseData(prev => ({ ...prev, categoryId: response.data[0].id }));
+                }
             } catch (err) {
                 console.error('Error cargando categorías:', err);
-                // Fallback a categorías estáticas
-                setCategories(['Artes', 'Cocina', 'Comunicación']);
+                setError('Error al cargar categorías. Usando fallback.');
+                const fallbackCategories = [
+                    { id: 'cat1', name: 'Artes' },
+                    { id: 'cat2', name: 'Cocina' },
+                    { id: 'cat3', name: 'Comunicación' }
+                ];
+                setCategories(fallbackCategories);
+                if (fallbackCategories.length > 0) {
+                     setNewCourseData(prev => ({ ...prev, categoryId: fallbackCategories[0].id }));
+                }
             }
         };
-        
-        loadCategories();
+        loadCategoriesAsync();
     }, []);
 
-    // Cargar cursos cuando cambien los filtros o la paginación
-    useEffect(() => {
-        loadCourses();
-    }, [currentPage, searchTerm, statusFilter, categoryFilter]);
+    const getCategoryNameById = useCallback((categoryId) => {
+        const category = categories.find(cat => cat.id === categoryId);
+        return category ? category.name : 'Sin categoría';
+    }, [categories]);
 
-    const loadCourses = async () => {
+    // Cargar cursos cuando cambien los filtros o la paginación
+    const loadCourses = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            
+            setSuccessMessage('');
+
             let response;
-            
-            // Aplicar filtros directamente en la llamada API si es posible
-            if (searchTerm) {
+             if (searchTerm) {
                 response = await courseService.searchCourses(searchTerm);
-            } else if (categoryFilter !== 'all') {
-                // Obtener el ID de categoría basado en el nombre
-                const categoryObject = categories.find(cat => cat.name === categoryFilter);
-                const categoryId = categoryObject ? categoryObject.id : null;
-                
-                if (categoryId) {
-                    response = await courseService.getCoursesByCategory(categoryId);
+            } else if (categoryFilter !== 'all' && categories.length > 0) {
+                const categoryObject = categories.find(cat => cat.name === categoryFilter || cat.id === categoryFilter);
+                const categoryIdToFilter = categoryObject ? categoryObject.id : null;
+                if (categoryIdToFilter) {
+                    response = await courseService.getCoursesByCategory(categoryIdToFilter);
                 } else {
-                    response = await courseService.getAllCourses();
+                     response = await courseService.getAllCourses(); // Fallback si no se encuentra ID
                 }
-            } else {
+            }
+             else {
                 response = await courseService.getAllCourses();
             }
-            
-            // Si hay datos, formatearlos para la tabla
+
             if (response && response.data) {
-                // Transformar los datos de la API al formato que espera la tabla
                 const formattedCourses = response.data.map(course => ({
                     id: course.id,
                     name: course.title || course.name,
                     status: course.status || 'ACTIVE',
                     description: course.description,
-                    category: course.category?.name || 'Sin categoría',
+                    categoryId: course.category?.id,
+                    category: course.category?.name || getCategoryNameById(course.categoryId) || 'Sin categoría',
                     enrolledCount: course.enrollmentCount || 0,
                     estimatedDuration: `${course.estimatedDuration || 0}h`,
                     imageUrl: course.imageUrl || null,
                     moduleCount: course.moduleCount || 0,
-                    activeModuleCount: course.activeModuleCount || 0
+                    activeModuleCount: course.activeModuleCount || 0 
                 }));
-                
-                // Aplicar filtro de estado si es necesario (puede ser que el backend no soporte este filtro)
+
                 let filteredCourses = formattedCourses;
                 if (statusFilter !== 'all') {
                     filteredCourses = formattedCourses.filter(course => course.status === statusFilter);
                 }
-                
-                // Aplicar paginación local - idealmente, la API debería manejar esto
+
                 const startIndex = (currentPage - 1) * pageSize;
                 const endIndex = startIndex + pageSize;
                 const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
-                
+
                 setCourses(paginatedCourses);
                 setTotalElements(filteredCourses.length);
                 setTotalPages(Math.ceil(filteredCourses.length / pageSize));
+            } else {
+                 throw new Error("No se recibieron datos de cursos o la respuesta no tiene el formato esperado.");
             }
         } catch (err) {
-            setError('Error al cargar los cursos');
+            setError(`Error al cargar los cursos: ${err.message}. Usando datos mock.`);
             console.error('Error cargando cursos:', err);
-            
-            // Fallback a datos mock en caso de error
-            useMockData();
+            useMockData(); // Fallback a mock
         } finally {
             setLoading(false);
         }
-    };
-    
-    // Función para cargar datos mock como fallback
+    }, [currentPage, searchTerm, statusFilter, categoryFilter, pageSize, categories, getCategoryNameById]);
+
+
+    useEffect(() => {
+        loadCourses();
+    }, [loadCourses]); // Ahora loadCourses es una dependencia estable gracias a useCallback
+
+
     const useMockData = () => {
-        // Convertir mockCourses al formato esperado por la tabla
-        const formattedCourses = mockCourses.map(course => {
-            // Contar módulos activos para cada curso
+        const formattedMockCourses = mockCourses.map(course => {
             const courseModules = mockModules.filter(module => module.courseId === course.id);
             const activeModules = courseModules.filter(module => module.status === 'ACTIVE');
-            
+            const categoryName = getCategoryFromTitle(course.title);
+            const categoryObject = categories.find(c => c.name === categoryName) || { id: categoryName, name: categoryName };
+
+
             return {
                 id: course.id,
                 name: course.title,
-                status: 'ACTIVE',
+                status: 'ACTIVE', 
                 description: course.description,
-                category: getCategoryFromTitle(course.title),
+                categoryId: categoryObject.id,
+                category: categoryObject.name,
                 enrolledCount: Math.floor(Math.random() * 30) + 5,
                 estimatedDuration: `${Math.floor(Math.random() * 40) + 10}h`,
                 imageUrl: course.image || null,
@@ -139,163 +176,237 @@ const CourseManagement = () => {
                 activeModuleCount: activeModules.length
             };
         });
-        
-        // Aplicar filtros
-        let filteredCourses = formattedCourses;
-        
+
+        let filteredCourses = formattedMockCourses;
         if (searchTerm) {
             filteredCourses = filteredCourses.filter(course =>
                 course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 course.description.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-        
         if (statusFilter !== 'all') {
             filteredCourses = filteredCourses.filter(course => course.status === statusFilter);
         }
-        
         if (categoryFilter !== 'all') {
-            filteredCourses = filteredCourses.filter(course => course.category === categoryFilter);
+             const categoryObject = categories.find(cat => cat.name === categoryFilter || cat.id === categoryFilter);
+             const categoryIdToFilter = categoryObject ? categoryObject.id : null;
+             if (categoryIdToFilter) {
+                filteredCourses = filteredCourses.filter(course => course.categoryId === categoryIdToFilter);
+             }
         }
-        
-        // Aplicar paginación
+
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
         const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
-        
+
         setCourses(paginatedCourses);
         setTotalElements(filteredCourses.length);
         setTotalPages(Math.ceil(filteredCourses.length / pageSize));
     };
 
-    // Función auxiliar para determinar categoría basada en el título (solo para datos mock)
-    const getCategoryFromTitle = (title) => {
+    const getCategoryFromTitle = (title) => { 
         const title_lower = title.toLowerCase();
-        if (title_lower.includes('crochet') || title_lower.includes('bordado') || title_lower.includes('artesanía')) {
-            return 'Artes';
-        } else if (title_lower.includes('cocina')) {
-            return 'Cocina';
-        } else if (title_lower.includes('comunicación')) {
-            return 'Comunicación';
-        }
-        return 'Artes'; // Por defecto
+        if (title_lower.includes('crochet') || title_lower.includes('bordado') || title_lower.includes('artesanía')) return 'Artes';
+        if (title_lower.includes('cocina')) return 'Cocina';
+        if (title_lower.includes('comunicación')) return 'Comunicación';
+        return categories.length > 0 ? categories[0].name : 'Artes';
     };
 
-    // Manejador para cambiar el estado de un curso
-    const handleStatusChange = async (courseId, newStatus) => {
+    const handleCancelEdit = () => {
+        setIsAddingCourse(false);
+        setEditingCourseId(null);
+        setNewCourseData({
+            name: '', description: '', categoryId: categories.length > 0 ? categories[0].id : '',
+            status: 'ACTIVE', estimatedDuration: '10h', imageUrl: ''
+        });
+        setEditingCourseData({
+            id: null, name: '', description: '', categoryId: '',
+            status: 'ACTIVE', estimatedDuration: '', imageUrl: ''
+        });
+        setError(null);
+        setSuccessMessage('');
+    };
+
+    const handleAddCourseClick = () => {
+        handleCancelEdit(); // Cancela cualquier edición en curso
+        setIsAddingCourse(true);
+        const tableContainer = document.querySelector('.table-container');
+        if (tableContainer) tableContainer.scrollTop = 0;
+    };
+
+    const handleInputChange = (e, formType) => {
+        const { name, value } = e.target;
+        if (formType === 'new') {
+            setNewCourseData(prev => ({ ...prev, [name]: value }));
+        } else if (formType === 'edit') {
+            setEditingCourseData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+    
+    const handleSaveNewCourse = async () => {
+        if (!newCourseData.name || !newCourseData.description || !newCourseData.categoryId) {
+            setError('Nombre, descripción y categoría son requeridos.');
+            setTimeout(() => setError(null), 3000);
+            return;
+        }
         try {
-            await courseService.updateCourseStatus(courseId, newStatus);
-            
-            // Actualizar estado local después de la respuesta exitosa
-            setCourses(prevCourses =>
-                prevCourses.map(course =>
-                    course.id === courseId ? { ...course, status: newStatus } : course
-                )
-            );
+            const payload = {
+                ...newCourseData,
+                estimatedDuration: parseInt(newCourseData.estimatedDuration.replace('h', ''), 10) || 0,
+            };
+            const response = await courseService.createCourse(payload); 
+            if (response && response.data) {
+                setSuccessMessage('Curso creado exitosamente!');
+                loadCourses(); 
+                handleCancelEdit();
+            } else {
+                throw new Error("La creación del curso no devolvió datos.");
+            }
         } catch (err) {
-            setError('Error al actualizar el estado del curso');
-            console.error('Error actualizando estado del curso:', err);
+            setError(`Error al crear el curso: ${err.response?.data?.message || err.message}`);
+            console.error('Error creando curso:', err);
+            setTimeout(() => setError(null), 5000);
+        }
+    };
+
+    const handleEditCourseClick = (course) => {
+        handleCancelEdit();
+        setEditingCourseId(course.id);
+        setEditingCourseData({
+            id: course.id,
+            name: course.name,
+            description: course.description,
+            categoryId: course.categoryId || (categories.find(c => c.name === course.category)?.id || ''),
+            status: course.status,
+            estimatedDuration: course.estimatedDuration,
+            imageUrl: course.imageUrl || ''
+        });
+    };
+
+    const handleSaveEditedCourse = async () => {
+        if (!editingCourseData.name || !editingCourseData.description || !editingCourseData.categoryId) {
+            setError('Nombre, descripción y categoría son requeridos.');
+            setTimeout(() => setError(null), 3000);
+            return;
+        }
+        try {
+            const payload = {
+                ...editingCourseData,
+                estimatedDuration: parseInt(editingCourseData.estimatedDuration.replace('h', ''), 10) || 0,
+            };
+            const response = await courseService.updateCourse(editingCourseId, payload);
+            if (response && response.data) {
+                setSuccessMessage('Curso actualizado exitosamente!');
+                loadCourses(); 
+                handleCancelEdit();
+            } else {
+                throw new Error("La actualización del curso no devolvió datos.");
+            }
+        } catch (err) {
+            setError(`Error al actualizar el curso: ${err.response?.data?.message || err.message}`);
+            console.error('Error actualizando curso:', err);
+            setTimeout(() => setError(null), 5000);
         }
     };
 
     // Manejador para cambiar la categoría de un curso
-    const handleCategoryChange = async (courseId, newCategoryId) => {
+    const handleCategoryUpdate = async (courseId, newCategoryId) => {
         try {
-            // Buscar el nombre de la categoría por su ID
-            const categoryName = categories.find(cat => cat.id === newCategoryId)?.name || 'Sin categoría';
-            
-            // Suponiendo que tienes un endpoint para actualizar la categoría
+            setSuccessMessage(''); setError(null);
+            const categoryName = getCategoryNameById(newCategoryId);
             await courseService.updateCourse(courseId, { categoryId: newCategoryId });
             
-            // Actualizar estado local
             setCourses(prevCourses =>
                 prevCourses.map(course =>
-                    course.id === courseId ? { ...course, category: categoryName } : course
+                    course.id === courseId ? { ...course, category: categoryName, categoryId: newCategoryId } : course
                 )
             );
+            setSuccessMessage('Categoría del curso actualizada.');
+            setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Error al actualizar la categoría del curso');
             console.error('Error actualizando categoría del curso:', err);
+            setTimeout(() => setError(null), 3000);
         }
     };
-
+    
     // Manejador para eliminar un curso
     const handleDeleteCourse = async (courseId) => {
         if (window.confirm('¿Está seguro de que desea eliminar este curso?')) {
             try {
-                await courseService.deleteCourse(courseId);
+                setSuccessMessage(''); setError(null);
+                await courseService.deleteCourse(courseId); 
                 
-                // Eliminar del estado local
                 setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
                 
-                // Recalcular paginación
                 const newTotalElements = totalElements - 1;
                 setTotalElements(newTotalElements);
                 setTotalPages(Math.ceil(newTotalElements / pageSize));
                 
-                // Si estamos en la última página y se queda vacía, ir a la anterior
                 if (courses.length === 1 && currentPage > 1) {
                     setCurrentPage(currentPage - 1);
+                } else if (courses.length === 1 && currentPage === 1 && newTotalElements === 0) {
+                    // Si era el último curso en la única página
+                    loadCourses(); // Recargar para mostrar "No se encontraron cursos"
                 }
-                
+                setSuccessMessage('Curso eliminado exitosamente.');
+                setTimeout(() => setSuccessMessage(''), 3000);
             } catch (err) {
-                setError('Error al eliminar el curso');
+                setError('Error al eliminar el curso.');
                 console.error('Error eliminando curso:', err);
+                setTimeout(() => setError(null), 3000);
             }
         }
     };
 
-    // Manejador para subir imagen de curso
-    const handleImageUpload = async (courseId, file) => {
-        try {
-            // Crear FormData para envío de archivos
-            const formData = new FormData();
-            formData.append('image', file);
-            
-            // Llamar al servicio para subir la imagen
-            const response = await courseService.uploadCourseImage(courseId, formData);
-            const imageUrl = response.data.imageUrl || `/uploads/${file.name}`;
-            
-            // Actualizar URL de imagen en el estado local
-            setCourses(prevCourses =>
-                prevCourses.map(course =>
-                    course.id === courseId ? { ...course, imageUrl: imageUrl } : course
-                )
-            );
-        } catch (err) {
-            setError('Error al subir la imagen');
-            console.error('Error subiendo imagen:', err);
-        }
-    };
-
-    // Resto del componente permanece igual...
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1); // Resetear a primera página al buscar
+        setCurrentPage(1);
     };
 
     const renderPagination = () => {
         const pages = [];
-        const maxVisiblePages = 5;
+        const maxVisiblePages = 5;  
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
         
-        for (let i = 1; i <= Math.min(totalPages, maxVisiblePages); i++) {
+        if (startPage > 1) {
+            pages.push(
+                 <button key="1" onClick={() => setCurrentPage(1)} className="pagination-btn">1</button>
+            );
+            if (startPage > 2) {
+                 pages.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
             pages.push(
                 <button
                     key={i}
                     onClick={() => setCurrentPage(i)}
                     className={`pagination-btn ${currentPage === i ? 'active' : ''}`}
-                    aria-label={`Página ${i}`}
-                    aria-current={currentPage === i ? 'page' : undefined}
                 >
                     {i}
                 </button>
             );
         }
         
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                 pages.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
+            }
+            pages.push(
+                 <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className="pagination-btn">{totalPages}</button>
+            );
+        }
         return pages;
     };
 
-    if (loading) {
+    if (loading && !isAddingCourse && !editingCourseId) { 
         return (
             <div className="course-management">
                 <Header isLoggedIn={true} isAdmin={true} />
@@ -313,66 +424,39 @@ const CourseManagement = () => {
                     <h1 className="page-title">Gestión de Cursos</h1>
                     <p className="page-subtitle">Una nueva puerta hacia el conocimiento</p>
 
-                    {error && (
-                        <div className="error-message" role="alert">
-                            {error}
-                        </div>
-                    )}
+                    {error && <div className="error-message" role="alert">{error}</div>}
+                    {successMessage && <div className="success-message" role="alert">{successMessage}</div>}
 
-                    {/* Controles */}
                     <div className="controls">
-                        <button className="add-course-btn" type="button">
+                        <button className="add-course-btn" type="button" onClick={handleAddCourseClick} disabled={isAddingCourse || editingCourseId}>
                             Añadir Curso
                         </button>
                         
                         <div className="search-container">
-                            <input
-                                type="text"
-                                placeholder="Buscar Curso"
-                                value={searchTerm}
-                                onChange={handleSearch}
-                                className="search-input"
-                            />
-                            <i className="fas fa-search search-icon" aria-hidden="true"></i>
+                            <input type="text" placeholder="Buscar Curso" value={searchTerm} onChange={handleSearch} className="search-input"/>
+                            <i className="fas fa-search search-icon"></i>
                         </div>
                         
                         <div className="filter-controls">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => {
-                                    setStatusFilter(e.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className="filter-select"
-                            >
+                            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1);}} className="filter-select">
                                 <option value="all">Todos los estados</option>
                                 <option value="ACTIVE">Activo</option>
                                 <option value="INACTIVE">Inactivo</option>
                             </select>
                             
-                            <select
-                                value={categoryFilter}
-                                onChange={(e) => {
-                                    setCategoryFilter(e.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className="filter-select"
-                            >
+                            <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1);}} className="filter-select">
                                 <option value="all">Todas las categorías</option>
                                 {categories.map(category => (
-                                    <option key={category.id || category} value={category.name || category}>
-                                        {category.name || category}
+                                    <option key={category.id || category.name} value={category.id || category.name}>
+                                        {category.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </div>
 
-                    {/* Tabla de cursos */}
                     <div className="table-container">
                         <table className="courses-table">
-                            {/* El resto de la tabla permanece igual... */}
-                            {/* Solo cambia cómo se manejan los datos */}
                             <thead>
                                 <tr>
                                     <th>Acción</th>
@@ -382,133 +466,131 @@ const CourseManagement = () => {
                                     <th>Descripción</th>
                                     <th>Categoría</th>
                                     <th>Inscritos</th>
-                                    <th>Duración Estimada</th>
-                                    <th>Portada</th>
+                                    <th>Duración</th>
+                                    <th>Portada (URL)</th>
                                     <th>Módulos</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {courses.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="10" style={{textAlign: 'center', padding: '2rem'}}>
-                                            No se encontraron cursos
+                                {isAddingCourse && (
+                                    <tr className="new-course-row">
+                                        <td className="actions-cell">
+                                            <button className="action-btn save-btn" title="Guardar Nuevo Curso" onClick={handleSaveNewCourse}><i className="fas fa-save"></i></button>
+                                            <button className="action-btn cancel-btn" title="Cancelar" onClick={handleCancelEdit}><i className="fas fa-times"></i></button>
                                         </td>
+                                        <td>NUEVO</td>
+                                        <td><input type="text" name="name" value={newCourseData.name} onChange={(e) => handleInputChange(e, 'new')} placeholder="Nombre del curso" className="edit-input"/></td>
+                                        <td>
+                                            <select name="status" value={newCourseData.status} onChange={(e) => handleInputChange(e, 'new')} className="edit-select">
+                                                <option value="ACTIVE">Activo</option>
+                                                <option value="INACTIVE">Inactivo</option>
+                                            </select>
+                                        </td>
+                                        <td><textarea name="description" value={newCourseData.description} onChange={(e) => handleInputChange(e, 'new')} placeholder="Descripción" className="edit-textarea"/></td>
+                                        <td>
+                                            <select name="categoryId" value={newCourseData.categoryId} onChange={(e) => handleInputChange(e, 'new')} className="edit-select">
+                                                <option value="">Seleccione categoría</option>
+                                                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                            </select>
+                                        </td>
+                                        <td><span className="text-center">-</span></td> {/* Inscritos no editable al crear */}
+                                        <td><input type="text" name="estimatedDuration" value={newCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'new')} placeholder="Ej: 20h" className="edit-input short-input"/></td>
+                                        <td><input type="text" name="imageUrl" value={newCourseData.imageUrl} onChange={(e) => handleInputChange(e, 'new')} placeholder="URL de imagen" className="edit-input"/></td>
+                                        <td><span className="text-center">-</span></td> {/* Módulos no gestionables al crear */}
                                     </tr>
+                                )}
+
+                                {courses.length === 0 && !isAddingCourse ? (
+                                    <tr><td colSpan="10" style={{textAlign: 'center', padding: '2rem'}}>No se encontraron cursos</td></tr>
                                 ) : (
                                     courses.map((course) => (
-                                        <tr key={course.id}>
-                                            <td className="actions-cell">
-                                                <button
-                                                    className="action-btn info-btn"
-                                                    aria-label={`Información curso ${course.id}`}
-                                                    title="Ver información"
-                                                >
-                                                    <i className="fas fa-info"></i>
-                                                </button>
-                                                <button
-                                                    className="action-btn edit-btn"
-                                                    aria-label={`Editar curso ${course.id}`}
-                                                    title="Editar curso"
-                                                >
-                                                    <i className="fas fa-pencil-alt"></i>
-                                                </button>
-                                                <button
-                                                    className="action-btn hide-btn"
-                                                    aria-label={`Ocultar curso ${course.id}`}
-                                                    title="Ocultar/Mostrar curso"
-                                                    onClick={() => handleStatusChange(
-                                                        course.id, 
-                                                        course.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-                                                    )}
-                                                >
-                                                    <i className={`fas ${course.status === 'ACTIVE' ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                                                </button>
-                                                <button
-                                                    className="action-btn delete-btn"
-                                                    aria-label={`Eliminar curso ${course.id}`}
-                                                    title="Eliminar curso"
-                                                    onClick={() => handleDeleteCourse(course.id)}
-                                                >
-                                                    <i className="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                            <td>{course.id}</td>
-                                            <td>{course.name}</td>
-                                            <td>
-                                                <span className={`status-display ${course.status === 'ACTIVE' ? 'active' : 'inactive'}`}>
-                                                    {course.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td 
-                                                className="description-cell"
-                                                title={course.description}
-                                            >
-                                                {course.description.length > 50 
-                                                    ? `${course.description.substring(0, 50)}...` 
-                                                    : course.description
-                                                }
-                                            </td>
-                                            <td>
-                                                <span className="category-display">
-                                                    {course.category}
-                                                </span>
-                                            </td>
-                                            <td className="text-center">{course.enrolledCount || 0}</td>
-                                            <td className="text-center">{course.estimatedDuration || 'N/A'}</td>
-                                            <td className="image-cell">
-                                                <div className="image-container">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="img.png"
-                                                        value={course.imageUrl || ''}
-                                                        readOnly
-                                                        className="image-input"
-                                                        aria-label={`Portada curso ${course.id}`}
-                                                    />
-                                                    <label className="upload-btn" title="Subir imagen">
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(e) => {
-                                                                if (e.target.files[0]) {
-                                                                    handleImageUpload(course.id, e.target.files[0]);
-                                                                }
-                                                            }}
-                                                            style={{ display: 'none' }}
-                                                        />
-                                                        <i className="fas fa-upload"></i>
-                                                    </label>
-                                                </div>
-                                            </td>
-                                            <td className="text-center">
-                                                <a
-                                                    href={`/admin/modules/course/${course.id}`}
-                                                    className="modules-link"
-                                                >
-                                                    Administrar módulos ({course.moduleCount || 0})
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        editingCourseId === course.id ? (
+                                            <tr key={course.id} className="editing-course-row">
+                                                <td className="actions-cell">
+                                                    <button className="action-btn save-btn" title="Guardar Cambios" onClick={handleSaveEditedCourse}><i className="fas fa-save"></i></button>
+                                                    <button className="action-btn cancel-btn" title="Cancelar Edición" onClick={handleCancelEdit}><i className="fas fa-times"></i></button>
+                                                </td>
+                                                <td>{course.id}</td>
+                                                <td><input type="text" name="name" value={editingCourseData.name} onChange={(e) => handleInputChange(e, 'edit')} className="edit-input"/></td>
+                                                <td>
+                                                    <select name="status" value={editingCourseData.status} onChange={(e) => handleInputChange(e, 'edit')} className="edit-select">
+                                                        <option value="ACTIVE">Activo</option>
+                                                        <option value="INACTIVE">Inactivo</option>
+                                                    </select>
+                                                </td>
+                                                <td><textarea name="description" value={editingCourseData.description} onChange={(e) => handleInputChange(e, 'edit')} className="edit-textarea"/></td>
+                                                <td>
+                                                    <select name="categoryId" value={editingCourseData.categoryId} onChange={(e) => handleInputChange(e, 'edit')} className="edit-select">
+                                                         <option value="">Seleccione categoría</option>
+                                                        {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                                    </select>
+                                                </td>
+                                                <td className="text-center">{course.enrolledCount}</td>
+                                                <td><input type="text" name="estimatedDuration" value={editingCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'edit')} className="edit-input short-input"/></td>
+                                                <td>
+                                                    <div className="image-container">
+                                                        <input type="text" name="imageUrl" value={editingCourseData.imageUrl} onChange={(e) => handleInputChange(e, 'edit')} placeholder="URL de imagen" className="edit-input"/>
+                                                        {/* Opcional: Botón de subida aquí también, pero más complejo */}
+                                                    </div>
+                                                </td>
+                                                <td className="text-center">
+                                                     <a href={`/admin/modules/course/${course.id}`} className="modules-link">Ver ({course.moduleCount || 0})</a>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            <tr key={course.id}>
+                                                <td className="actions-cell">
+                                                    {/* <button className="action-btn info-btn" title="Ver información"><i className="fas fa-info"></i></button> */}
+                                                    <button className="action-btn edit-btn" title="Editar curso" onClick={() => handleEditCourseClick(course)}  disabled={isAddingCourse || editingCourseId}><i className="fas fa-pencil-alt"></i></button>
+                                                    <button className="action-btn delete-btn" title="Eliminar curso" onClick={() => handleDeleteCourse(course.id)} disabled={isAddingCourse || editingCourseId}><i className="fas fa-trash"></i></button>
+                                                </td>
+                                                <td>{course.id}</td>
+                                                <td>{course.name}</td>
+                                                <td><span className={`status-display ${course.status === 'ACTIVE' ? 'active' : 'inactive'}`}>{course.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td className="description-cell" title={course.description}>{course.description.length > 50 ? `${course.description.substring(0, 50)}...` : course.description}</td>
+                                                <td>
+                                                    {/* Para cambio rápido de categoría sin entrar a editar (opcional) */}
+                                                    {/* <select value={course.categoryId || ''} 
+                                                            onChange={(e) => handleCategoryUpdate(course.id, e.target.value)}
+                                                            className="quick-category-select"
+                                                            disabled={isAddingCourse || editingCourseId}>
+                                                        {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                                    </select> */}
+                                                    <span className="category-display">{getCategoryNameById(course.categoryId) || course.category}</span>
+
+                                                </td>
+                                                <td className="text-center">{course.enrolledCount}</td>
+                                                <td className="text-center">{course.estimatedDuration}</td>
+                                                <td className="image-cell">
+                                                    <div className="image-container">
+                                                        <input type="text" placeholder="img.png" value={course.imageUrl || ''} readOnly className="image-input"/>
+                                                        <label className="upload-btn" title="Subir imagen">
+                                                            <input type="file" accept="image/*" style={{ display: 'none' }}
+                                                                onChange={(e) => { if (e.target.files[0]) { handleImageUpload(course.id, e.target.files[0]); }}}
+                                                                disabled={isAddingCourse || editingCourseId}
+                                                            />
+                                                            <i className="fas fa-upload"></i>
+                                                        </label>
+                                                    </div>
+                                                </td>
+                                                <td className="text-center">
+                                                    <a href={`/admin/modules/course/${course.id}`} className="modules-link">Administrar ({course.moduleCount || 0})</a>
+                                                </td>
+                                            </tr>
+                                        )
                                     ))
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Paginación */}
-                    <div className="pagination-container" aria-label="Paginación y resultados">
+                    <div className="pagination-container">
                         <div className="pagination">
                             <span>Página</span>
                             {renderPagination()}
-                            {totalPages > 5 && (
-                                <>
-                                    <i className="fas fa-angle-right pagination-arrow"></i>
-                                    <i className="fas fa-angle-right pagination-arrow"></i>
-                                </>
-                            )}
                         </div>
                         <div className="results-info">
-                            Resultado {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements}
+                            Resultado {totalElements > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements}
                         </div>
                     </div>
                 </section>
