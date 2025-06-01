@@ -156,7 +156,10 @@ export const moduleService = {
 // Servicio de usuario
 export const userService = {
   getProfile: () => apiClient.get('/user/profile'),
-  updateProfile: (data) => apiClient.put('/user/profile', data)
+  updateProfile: (data) => apiClient.put('/user/profile', data),
+  uploadProfileImage: (formData) => apiClient.post('/user/profile/image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 };
 
 // Servicio de aprendiz

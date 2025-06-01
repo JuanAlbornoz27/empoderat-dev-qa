@@ -2,13 +2,18 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faBell } from "@fortawesome/free-solid-svg-icons";
-import "../styles/HeaderIndex.css";
+import "../styles/HeaderLearner.css";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import empoderatLogo from "../assets/empodera-logo.png";
 import profileIcon from "../assets/profile-icon.png";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Header = ({ texto1, texto2, texto3, texto4 }) => {
+  const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -21,6 +26,16 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
     setShowUserMenu(!showUserMenu);
     setShowNotifications(false);
   };
+
+  const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            navigate('/login');
+        }
+    };
 
   return (
     <div className="header">
@@ -54,7 +69,10 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
             </NavLink>
           </li>
           <li>
-            <NavLink>
+            <NavLink
+              to="/admin/estadistics"
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+            >
               {texto4}
             </NavLink>
           </li>
@@ -74,21 +92,13 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
 
         <div className="user-container">
           <div className="user-info">
-            <span className="user-name">Administrador</span>
-            <span className="user-role">Juanita</span>
+            <span className="user-name">{user.role}</span>
+            <span className="user-role">{user.name}</span>
           </div>
           <button className="perfil-btn" onClick={toggleUserMenu}>
             <img src={profileIcon} alt="Perfil" />
           </button>
-          {showUserMenu && (
-            <div className="user-dropdown">
-              <div className="user-dropdown-header">
-                <span className="user-role">Administrador</span>
-                <span className="user-name">Juanita</span>
-              </div>
-              <button className="logout-btn">Cerrar sesión</button>
-            </div>
-          )}
+          {showUserMenu && <UserDropdown />}
         </div>
       </div>
     </div>

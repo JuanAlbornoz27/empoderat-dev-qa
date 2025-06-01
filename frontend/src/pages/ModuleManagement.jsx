@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Header from "../components/HeaderLearner";
+import Header from "../components/HeaderAdmin";
 import "../styles/ModuleManagement.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 

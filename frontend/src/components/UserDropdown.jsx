@@ -23,6 +23,11 @@ const UserDropdown = () => {
         }
     };
 
+    // Función para manejar la redirección al perfil
+    const handleProfileClick = () => {
+        navigate('/profile');
+    };
+
     return (
         <div className="user-dropdown">
             <div className="user-dropdown-content">
@@ -30,13 +35,22 @@ const UserDropdown = () => {
                     <span className="user-dropdown-role">{user?.role || 'Usuario'}</span>
                     <span className="user-dropdown-name">{user?.name || 'Usuario'}</span>
                 </div>
-                <button
-                    className="logout-btn"
-                    onClick={handleLogout}
-                    type="button"
-                >
-                    Cerrar sesión
-                </button>
+                <div className="user-dropdown-buttons">
+                    <button
+                        className="profile-btn"
+                        onClick={handleProfileClick}
+                        type="button"
+                    >
+                        Ver perfil
+                    </button>
+                    <button
+                        className="logout-btn"
+                        onClick={handleLogout}
+                        type="button"
+                    >
+                        Cerrar sesión
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -43,6 +43,9 @@ public class User {
     @Column(length = 50)
     private String city;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "keycloak_id", nullable = false, unique = true)
     private String keycloakId;
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { courseService, categoryService } from '../services/api';
-import Header from '../components/HeaderIndex';
+import Header from '../components/HeaderAdmin';
 import '../styles/CourseManagement.css';
 // Mantener los mocks como fallback
 import { mockCourses } from '../data/mockCourses';
@@ -306,7 +306,13 @@ const CourseManagement = () => {
     
     return (
         <div className="course-management">
-            <Header isLoggedIn={true} isAdmin={true} />
+            <Header 
+                    texto1="Categorías"
+                    texto2="Cursos"
+                    texto3="Módulos"
+                    texto4="Estadísticas"
+            
+            isLoggedIn={true} isAdmin={true} />
             
             <main className="main-content">
                 <section className="content-container">

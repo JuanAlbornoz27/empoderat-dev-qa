@@ -98,17 +98,7 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
           <button className="perfil-btn" onClick={toggleUserMenu}>
             <img src={profileIcon} alt="Perfil" />
           </button>
-          {showUserMenu && (
-            <div className="user-dropdown">
-              <div className="user-dropdown-header">
-                <span className="user-role">{user.role}</span>
-                <span className="user-name">{user.name}</span>
-              </div>
-              <button className="logout-btn" onClick={handleLogout}>
-                            Cerrar sesión
-                        </button>
-            </div>
-          )}
+          {showUserMenu && <UserDropdown />}
         </div>
       </div>
     </div>

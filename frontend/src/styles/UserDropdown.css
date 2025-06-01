@@ -70,3 +70,118 @@
   border-right: 8px solid transparent;
   border-bottom: 8px solid white;
 }
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  background-color: #815896;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+  color: white;
+  overflow: hidden;
+}
+
+.user-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.user-dropdown-info {
+  background-color: #f6f2f7;
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border: #815896 3px solid;
+  color: #333;
+}
+
+.user-dropdown-role {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: white;
+  display: block;
+  background-color: #5d187f;
+  border-radius: 5px;
+}
+
+.user-dropdown-name {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.user-dropdown-buttons {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Estilos base compartidos para ambos botones - Ahora ambos cuadrados y con el mismo color */
+.profile-btn,
+.logout-btn {
+  width: 100%;
+  padding: 1rem;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  background-color: #5e0d7a; /* Color del botón de Cerrar sesión para ambos */
+  border-radius: 0; /* Asegura que sean cuadrados */
+}
+
+/* Borde para separar los botones */
+.profile-btn {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Efectos hover compartidos para ambos botones */
+.profile-btn:hover,
+.logout-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #5b0a7b; /* Color hover del botón de Cerrar sesión para ambos */
+}
+
+
+
+/* Mantener el resto de los estilos (efectos active y ripple) */
+.profile-btn:active,
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-btn::after,
+.logout-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: width 0.5s, height 0.5s, opacity 0.5s;
+  z-index: -1;
+}
+
+.profile-btn:hover::after,
+.logout-btn:hover::after {
+  width: 200%;
+  height: 200%;
+  opacity: 1;
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/HeaderIndex';
+import Header from '../components/HeaderAdmin';
 import '../styles/ModuleManagementAll.css';
 // IMPORTAR LOS DATOS MOCK (solo como fallback)
 import { mockCourses } from '../data/mockCourses';
@@ -510,7 +510,13 @@ const ModuleManagement = () => {
 
     return (
         <div className="module-management">
-            <Header isLoggedIn={true} isAdmin={true} />
+            <Header
+                    texto1="Categorías"
+                    texto2="Cursos"
+                    texto3="Módulos"
+                    texto4="Estadísticas"
+
+            isLoggedIn={true} isAdmin={true} />
             
             <main className="main-content">
                 <section className="content-container">

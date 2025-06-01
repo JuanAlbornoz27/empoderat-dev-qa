@@ -362,15 +362,15 @@ const CategoryManagement = () => {
     return (
         <div className="category-management">
             {/* <Header isLoggedIn={true} isAdmin={true} /> */}
-            
-            <main className="main-content">
-                <section className="content-container">
-                    <Header
+            <Header
                         texto1="Categorías"
                         texto2="Cursos"
                         texto3="Módulos"
-                        texto4="Contáctanos"
-                    />
+                        texto4="Estadísticas"
+            />
+            <main className="main-content">
+                <section className="content-container">
+                   
                     <h1 className="page-title">Gestión de Categorías</h1>
                     <p className="page-subtitle">Una forma sencilla de organizar sus ideas</p>
 
