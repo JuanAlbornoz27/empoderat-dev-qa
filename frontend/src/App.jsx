@@ -27,6 +27,7 @@ import Course from "./pages/Course";
 import ProfileInfo from "./pages/ProfileInfo";
 import Unauthorized from "./components/Unauthorized";
 import { getCourses } from "./data/apiService";
+import Statistics from "./pages/Statistics";
 
 export default function App() {
   const [courses, setCourses] = useState([]);
@@ -160,6 +161,14 @@ export default function App() {
             element={
               <ProtectedRoute adminOnly>
                 <CategoryManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/estadistics"
+            element={
+              <ProtectedRoute adminOnly>
+                <Statistics />
               </ProtectedRoute>
             }
           />
