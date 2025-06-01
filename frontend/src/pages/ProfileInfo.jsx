@@ -5,7 +5,7 @@ import '../styles/ProfileLearner.css';
 import Header from '../components/HeaderLearner';
 
 const ProfileInfo = () => {
-  const { user } = useAuth();
+  const { user, updateUserInfo } = useAuth(); // Añadir updateUserInfo desde useAuth
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -126,7 +126,7 @@ const ProfileInfo = () => {
       
       // Actualizar el estado local con la respuesta
       if (response && response.data) {
-        setUsuario({
+        const updatedUserData = {
           nombre: response.data.name || '',
           apellido: response.data.lastName || '',
           email: response.data.email || '',
@@ -135,6 +135,16 @@ const ProfileInfo = () => {
           fechaNacimiento: response.data.birthDate || '',
           ciudad: response.data.city || '',
           avatar: response.data.imageUrl || null
+        };
+        
+        setUsuario(updatedUserData);
+        
+        // Actualizar el estado global del usuario
+        updateUserInfo({
+          ...user,
+          name: response.data.name,
+          lastName: response.data.lastName,
+          // Otros campos que necesites actualizar
         });
         
         console.log('Perfil actualizado:', response.data);
@@ -226,8 +236,7 @@ const ProfileInfo = () => {
       <Header 
         texto1="Cursos" 
         texto2="Mis cursos" 
-        texto3="Módulos" 
-        texto4="Contáctanos" 
+        texto3="Contáctanos" 
       />
       <div className="perfil-container">
         {loading ? (

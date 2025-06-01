@@ -13,8 +13,7 @@ const ModulesList = () => {
       <Header
         texto1="Cursos"
         texto2="Mis cursos"
-        texto3="Módulos"
-        texto4="Contáctanos"
+        texto3="Contáctanos"
       />
 
       <div className="modules-list-content">

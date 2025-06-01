@@ -745,7 +745,7 @@ const ModuleManagement = () => {
                                                                             <i className="fas fa-pencil-alt"></i>
                                                                         </button>
                                                                         <button
-                                                                            className="action-btn delete-btn"
+                                                                            className="action-btn"
                                                                             aria-label={`Eliminar módulo ${module.id}`}
                                                                             title="Eliminar módulo"
                                                                             onClick={() => handleDeleteModule(module.id)}

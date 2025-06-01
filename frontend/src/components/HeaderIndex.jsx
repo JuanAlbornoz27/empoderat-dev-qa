@@ -18,7 +18,7 @@ const Header = ({ isLoggedIn, isAdmin }) => {
             <div className="header-main">
                 <div className="logo-container">
                     <Link to="/">
-                        <img src={logo} alt="EmpoderaT Logo" className="logo" />
+                        <img src={logo} alt="EmpoderaT Logo" className="logoIndx" />
                     </Link>
                 </div>
 
@@ -28,9 +28,6 @@ const Header = ({ isLoggedIn, isAdmin }) => {
                         {isLoggedIn ? (
                             <div className="user-profile">
                                 {isAdmin && <span className="admin-badge">Administrador</span>}
-                                <button className="logout-btn" onClick={handleLogout}>
-                                    Cerrar sesión
-                                </button>
                             </div>
                         ) : (
                             <button className="login-btn" onClick={() => navigate('/login')}>

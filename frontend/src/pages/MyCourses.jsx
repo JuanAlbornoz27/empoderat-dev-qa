@@ -23,10 +23,9 @@ const MisCursos = ({ cursos }) => {
       <Header
         texto1="Cursos"
         texto2="Mis cursos"
-        texto3="Módulos"
-        texto4="Contáctanos"
+        texto3="Contáctanos"
       />
-      <h1 className="cursos-titulo">Mis Cursos</h1>
+      <h1 className="cursos-titulo">MIS CURSOS</h1>
       <div className="cursos-lista">
         {cursos.map((curso, index) => (
           <CursoCard 

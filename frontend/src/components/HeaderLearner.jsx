@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faBell } from "@fortawesome/free-solid-svg-icons";
 import "../styles/HeaderLearner.css";
@@ -7,10 +7,9 @@ import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import empoderatLogo from "../assets/empodera-logo.png";
 import profileIcon from "../assets/profile-icon.png";
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const Header = ({ texto1, texto2, texto3, texto4 }) => {
+const Header = ({ texto1, texto2, texto3}) => {
   const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -40,7 +39,9 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
   return (
     <div className="header">
       <div className="logo">
-        <img src={empoderatLogo} alt="Empoderat" />
+        <Link to="/dashboard">
+          <img src={empoderatLogo} alt="Empoderat" />
+        </Link>
       </div>
       <nav className="nav">
         <ul>
@@ -62,18 +63,10 @@ const Header = ({ texto1, texto2, texto3, texto4 }) => {
           </li>
           <li>
             <NavLink
-              to="/modulos"
+              to="/contactanos"
               className={({ isActive }) => (isActive ? "active-link" : "")}
             >
               {texto3}
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/contacto"
-              className={({ isActive }) => (isActive ? "active-link" : "")}
-            >
-              {texto4}
             </NavLink>
           </li>
         </ul>

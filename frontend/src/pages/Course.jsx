@@ -1,14 +1,45 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Header from '../components/HeaderLearner';
+import { resourceService } from '../services/api'; // Importar el servicio de recursos
 import '../styles/CourseLearner.css';
 
 const Curso = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // Inicializar el hook de navegación
   const [cursoActual] = useState(location.state?.cursoSeleccionado || null);
 
-  const handleIniciarLeccion = (moduloId) => {
+  const handleIniciarLeccion = async (moduloId) => {
     console.log(`Iniciando lección del módulo: ${moduloId}`);
-    // Aquí implementarías la lógica para iniciar una lección
+    
+    try {
+      // Obtener los recursos del módulo seleccionado
+      const response = await resourceService.getResourcesByModule(moduloId);
+      const recursos = response.data || [];
+      
+      // Navegar a la vista de ModulesList pasando el ID del módulo y los recursos como estado
+      navigate('/modulos', { 
+        state: { 
+          moduloId: moduloId,
+          moduloNombre: cursoActual.modulos.find(m => m.id === moduloId)?.nombre,
+          cursoId: cursoActual.id,
+          cursoNombre: cursoActual.nombre,
+          recursos: recursos // Pasar los recursos obtenidos
+        } 
+      });
+    } catch (error) {
+      console.error('Error al obtener recursos del módulo:', error);
+      // En caso de error, navegar igualmente pero sin recursos
+      navigate('/modulos', { 
+        state: { 
+          moduloId: moduloId,
+          moduloNombre: cursoActual.modulos.find(m => m.id === moduloId)?.nombre,
+          cursoId: cursoActual.id,
+          cursoNombre: cursoActual.nombre,
+          recursos: [] // Lista vacía en caso de error
+        } 
+      });
+    }
   };
 
   // Si el curso no está disponible, mostrar un indicador de carga
@@ -18,6 +49,11 @@ const Curso = () => {
 
   return (
     <div className="mis-cursos-container">
+      <Header
+        texto1="Cursos"
+        texto2="Mis cursos"
+        texto3="Contáctanos"
+      />
       <div className="curso-detalle-card">
         <h1 className="mis-cursos-titulo">Mis cursos</h1>
         

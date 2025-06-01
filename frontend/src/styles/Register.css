@@ -7,6 +7,10 @@
     background-color: white;
     box-shadow: var(--shadow);
     margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    border-bottom: 3px solid #6B4A8C; 
+    z-index: 1000;
 }
 
 .logo-container {
@@ -18,6 +22,12 @@
 .logo-image {
     height: 90px;
     object-fit: contain;
+    margin-left: 75rem;
+}
+
+.logo-image:hover {
+    filter: drop-shadow(0 0 0.3rem #a067b3);
+    transform: scale(1.01);
 }
 
 .auth-page {

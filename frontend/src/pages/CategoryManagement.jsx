@@ -454,7 +454,7 @@ const CategoryManagement = () => {
                                                             <i className="fas fa-pencil-alt"></i>
                                                         </button>
                                                         <button
-                                                            className="action-btn delete-btn"
+                                                            className="action-btn "
                                                             aria-label={`Eliminar categoría ${category.id}`}
                                                             title="Eliminar categoría"
                                                             onClick={() => handleDeleteCategory(category.id)}

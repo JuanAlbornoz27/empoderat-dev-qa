@@ -14,11 +14,11 @@
     max-width: 90rem;
     margin: 0 auto;
     padding: 0 1.5rem;
-    padding-top: 6rem; /* Aumentado para evitar el overlap con el header */
+    padding-top: 4rem; /* Aumentado para evitar el overlap con el header */
 }
 
 .page-title {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: 800;
     color: #2d1b4e !important;
     text-align: center;
@@ -133,6 +133,13 @@
 .categories-table thead {
     background-color: #8B6FA6;
     color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: sticky;
+    z-index: 1000; 
+    border-bottom: 2px solid #6B4A8C; 
+    box-sizing: border-box; 
+    top: 0; 
 }
 
 .categories-table th {
@@ -146,10 +153,19 @@
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid #d1d5db;
     color: black;
+    vertical-align: middle;
+    height: 4rem; /* Hacer que la altura de la celda coincida con la de la fila */
+    box-sizing: border-box;
 }
 
 .categories-table tbody tr:last-child td {
     border-bottom: none;
+}
+
+/* Establecer altura fija para las filas */
+.categories-table tr {
+    height: 3rem; /* Altura fija para todas las filas */
+    box-sizing: border-box;
 }
 
 /* Action buttons - horizontal layout */
@@ -161,6 +177,18 @@
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
+}
+
+.categories-table .actions-cell {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.25rem;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem !important;
+    height: 4rem; /* Altura fija que coincide con la fila */
+    min-height: 4rem;
+    box-sizing: border-box;
 }
 
 .action-btn {
@@ -176,6 +204,14 @@
     cursor: pointer;
     transition: background-color 0.15s ease-in-out;
     flex-shrink: 0;
+}
+
+.categories-table .action-btn {
+    flex: 0 0 auto;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: 0;
+    padding: 0;
 }
 
 .action-btn:hover {

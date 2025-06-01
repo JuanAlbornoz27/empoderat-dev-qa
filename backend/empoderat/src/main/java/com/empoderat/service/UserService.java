@@ -9,12 +9,18 @@ import com.empoderat.util.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.UUID;
+import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +30,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final FileUploadUtil fileUploadUtil;
     private final SecurityUtil securityUtil;
+    private final KeycloakService keycloakService; // Añadir esta inyección
 
     public UserProfileResponse getCurrentUserProfile() {
         User user = getCurrentUser();
         return mapUserToProfileResponse(user);
     }
-    
+
     // Método para obtener perfil por email
     public UserProfileResponse getUserProfileByEmail(String email) {
         log.info("Buscando usuario por email: {}", email);
@@ -54,35 +61,48 @@ public class UserService {
                 email = securityUtil.getCurrentUserEmail();
                 log.info("Usando email del token: {}", email);
             }
-            
+
             // Buscar el usuario por email
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> {
                         log.error("Usuario no encontrado con email: {}", email);
                         return new EntityNotFoundException("Usuario no encontrado con email: " + email);
                     });
-            
+
             log.info("Usuario encontrado con ID: {}", user.getId());
-            
-            // Actualizar campos
+
+            // Guardar los valores actuales para compararlos después
+            String oldFirstName = user.getFirstName();
+            String oldLastName = user.getLastName();
+            String oldPhone = user.getPhone();
+            String oldCity = user.getCity();
+            LocalDate oldBirthDate = user.getBirthDate();
+
+            // Actualizar campos en MySQL
+            boolean userUpdated = false;
+
             if (request.getFirstName() != null && !request.getFirstName().isEmpty()) {
                 user.setFirstName(request.getFirstName());
                 log.info("Actualizando firstName a: {}", request.getFirstName());
+                userUpdated = true;
             }
 
             if (request.getLastName() != null && !request.getLastName().isEmpty()) {
                 user.setLastName(request.getLastName());
                 log.info("Actualizando lastName a: {}", request.getLastName());
+                userUpdated = true;
             }
 
             if (request.getPhone() != null && !request.getPhone().isEmpty()) {
                 user.setPhone(request.getPhone());
                 log.info("Actualizando phone a: {}", request.getPhone());
+                userUpdated = true;
             }
 
             if (request.getCity() != null && !request.getCity().isEmpty()) {
                 user.setCity(request.getCity());
                 log.info("Actualizando city a: {}", request.getCity());
+                userUpdated = true;
             }
 
             if (request.getBirthDate() != null && !request.getBirthDate().isEmpty()) {
@@ -108,20 +128,74 @@ public class UserService {
                             }
                         }
                     }
-                    
+
                     if (parsedDate != null) {
                         user.setBirthDate(parsedDate);
                         log.info("Actualizando birthDate a: {}", parsedDate);
+                        userUpdated = true;
                     }
                 } catch (Exception e) {
                     log.error("Error parsing date: {}", request.getBirthDate(), e);
                 }
             }
 
-            log.info("Guardando cambios en la base de datos");
+            // Actualizar en Keycloak si hubo cambios en campos relevantes
+            if (userUpdated) {
+                try {
+                    // Obtener el usuario de Keycloak por email
+                    UserRepresentation keycloakUser = keycloakService.getUserByEmail(email);
+
+                    if (keycloakUser != null) {
+                        // Actualizar campos en Keycloak
+                        boolean keycloakUpdate = false;
+
+                        if (!oldFirstName.equals(user.getFirstName())) {
+                            keycloakUser.setFirstName(user.getFirstName());
+                            keycloakUpdate = true;
+                        }
+
+                        if (!oldLastName.equals(user.getLastName())) {
+                            keycloakUser.setLastName(user.getLastName());
+                            keycloakUpdate = true;
+                        }
+
+                        // Actualizar atributos personalizados
+                        Map<String, List<String>> attributes = keycloakUser.getAttributes();
+                        if (attributes == null) {
+                            attributes = new HashMap<>();
+                        }
+
+                        if (!oldPhone.equals(user.getPhone())) {
+                            attributes.put("phone", Collections.singletonList(user.getPhone()));
+                            keycloakUpdate = true;
+                        }
+
+                        if (!oldCity.equals(user.getCity())) {
+                            attributes.put("city", Collections.singletonList(user.getCity()));
+                            keycloakUpdate = true;
+                        }
+
+                        if (oldBirthDate == null || !oldBirthDate.equals(user.getBirthDate())) {
+                            attributes.put("birthDate", Collections.singletonList(user.getBirthDate().toString()));
+                            keycloakUpdate = true;
+                        }
+
+                        if (keycloakUpdate) {
+                            keycloakUser.setAttributes(attributes);
+                            keycloakService.updateUser(keycloakUser.getId(), keycloakUser);
+                            log.info("Usuario actualizado en Keycloak: {}", keycloakUser.getId());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error al actualizar usuario en Keycloak: ", e);
+                    // No interrumpimos el flujo si falla la actualización en Keycloak
+                }
+            }
+
+            log.info("Guardando cambios en la base de datos MySQL");
             User savedUser = userRepository.save(user);
             log.info("Usuario actualizado con éxito");
-            
+
             return mapUserToProfileResponse(savedUser);
         } catch (Exception e) {
             log.error("Error al actualizar perfil: ", e);

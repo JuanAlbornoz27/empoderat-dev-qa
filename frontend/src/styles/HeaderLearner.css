@@ -7,19 +7,27 @@
   background-color: white;
   box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.05);
   height: 5rem;
-  position: relative;
-  width: 100%;
+  position: sticky; 
+  top: 0; 
+  z-index: 1000; 
+  border-bottom: 3px solid #6B4A8C; 
 }
 
 .logo {
   width: 12rem;
   padding: 0.5rem 0;
   margin-right: 5rem; 
+  margin-top: 0.2rem;
 }
 
 .logo img {
-  width: 76%;
-  height: 4.5rem;
+  width: 80%;
+  height: 4.9rem;
+}
+
+.logo img:hover {
+  filter: drop-shadow(0 0 0.3rem #a067b3);
+  transform: scale(1.01);
 }
 
 .nav {
@@ -30,8 +38,8 @@
   display: flex;
   align-items: center; 
   list-style: none;
-  gap: 1.875rem; 
-  margin: 0;
+  gap: 9rem; 
+  margin-left: 16rem;
   padding: 0;
 }
 
@@ -41,16 +49,23 @@
   font-weight: 500;
   font-size: 1rem;
   font-family: 'Poppins', sans-serif;
-  transition: color 0.2s ease;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
 }
 
 .nav a:hover {
+  background-color: rgba(94, 13, 122, 0.1);
   color: #3a0075;
+  border-radius: 1.5rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.5s ease;
 }
 
 .active-link {
   color: #3a0075 !important;
   font-weight: 600;
+  background-color: rgba(95, 13, 122, 0.162);
 }
 
 .header-actions {

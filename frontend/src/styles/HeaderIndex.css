@@ -3,7 +3,6 @@
     background-color: white;
     box-shadow: var(--shadow);
     position: sticky;
-
     top: 0;
     left: 0;
     right: 0;
@@ -19,26 +18,19 @@
 }
 
 .logo-container {
+    width: 19%;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    /* Alinea el logo a la izquierda */
 }
 
-.logo {
-    height: 90px;
-    margin-top: 10px;
-    margin-right: 0;
-    /* Elimina el margen derecho */
+.logoIndx {
+    height: 6.2rem;
+  padding: 0.5rem 0;
+  margin-right: 5rem; 
+  margin-top: 2rem;
 }
 
-.right-container {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    margin-left: auto;
-    /* Empuja todo el contenido derecho hacia la derecha */
-}
 
 .nav-container {
     display: flex;
@@ -105,8 +97,8 @@
     font-weight: 600;
     transition: all 0.3s;
     margin-left: 0;
-
-
+    font-size: 1rem;
+;
 }
 
 .login-btn:hover {
@@ -142,12 +134,19 @@
     color: white;
 }
 
-.auth-actions {
+.right-container {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    /* Alinea a la izquierda */
-    margin-right: 2rem;
+    justify-content: space-between; /* Cambiado para distribuir el espacio */
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    margin-left: 12rem;
+    gap: 23rem; 
+}
+
+.auth-actions {
+    margin-left: auto; /* Empuja el elemento hacia la derecha */
+    display: flex;
+    align-items: center;
 }
 
 @media (max-width: 768px) {

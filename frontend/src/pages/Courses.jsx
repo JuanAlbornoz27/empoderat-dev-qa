@@ -74,10 +74,10 @@ const Cursos = () => {
       <Header
         texto1="Cursos"
         texto2="Mis cursos"
-        texto3="Módulos"
-        texto4="Contáctanos"
+        texto3="Contactanos"
+  
       />
-      <h1 className="cursos-titulo">Cursos</h1>
+      <h1 className="cursos-titulo">CURSOS</h1>
       
       <div className="busqueda-container">
         <p className="busqueda-texto">¿Qué quieres aprender hoy?</p>

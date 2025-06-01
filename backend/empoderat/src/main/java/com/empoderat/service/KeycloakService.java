@@ -136,6 +136,20 @@ public class KeycloakService {
         return users.isEmpty() ? null : users.get(0);
     }
 
+    public void updateUser(String userId, UserRepresentation userRepresentation) {
+        try {
+            Keycloak keycloak = getKeycloakInstance();
+            RealmResource realmResource = keycloak.realm(realm);
+
+            // Actualizar el usuario
+            realmResource.users().get(userId).update(userRepresentation);
+            log.info("Usuario actualizado en Keycloak con ID: {}", userId);
+        } catch (Exception e) {
+            log.error("Error al actualizar usuario en Keycloak: ", e);
+            throw new RuntimeException("Error al actualizar usuario en Keycloak: " + e.getMessage());
+        }
+    }
+
     public void updateUserRole(String userId, String newRole) {
         Keycloak keycloak = getKeycloakInstance();
         RealmResource realmResource = keycloak.realm(realm);
