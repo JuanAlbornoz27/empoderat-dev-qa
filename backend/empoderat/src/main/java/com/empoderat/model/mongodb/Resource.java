@@ -26,6 +26,11 @@ public class Resource {
     @Field("module_id")
     private Long moduleId;
     
+    // Campos que necesitas agregar
+    private String title;
+    
+    private String description;
+    
     @Field("resource_type")
     private ResourceType type;
     

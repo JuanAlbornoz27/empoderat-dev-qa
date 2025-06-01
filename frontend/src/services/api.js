@@ -177,6 +177,23 @@ export const adminService = {
   deleteUser: (userId) => apiClient.delete(`/admin/users/${userId}`)
 };
 
+// Servicio de recursos
+export const resourceService = {
+  // Obtener recursos
+  getResourcesByModule: (moduleId) => apiClient.get(`/resources/module/${moduleId}`),
+  
+  // Crear recurso
+  createResource: (resource) => apiClient.post('/resources', resource),
+  
+  // Subir archivo de recurso
+  uploadResourceFile: (formData) => apiClient.post('/resources/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
+  // Eliminar recurso
+  deleteResource: (id) => apiClient.delete(`/resources/${id}`)
+};
+
 // Función auxiliar para refresh token
 const refreshAuthToken = (refreshToken) => {
   return axios.post(`${API_BASE_URL}/auth/refresh`, null, {

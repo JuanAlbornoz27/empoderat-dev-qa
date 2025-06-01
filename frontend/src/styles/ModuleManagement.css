@@ -32,7 +32,7 @@
 .module-header h2 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #666;
+    color: #ffffff;
     margin: 0.5rem 0 0 0;
     letter-spacing: 2px;
 }
@@ -308,6 +308,21 @@
     background-color: #4c0098;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(62, 8, 98, 0.3);
+}
+
+.module-name-badge {
+  display: inline-block;
+  background-color: #4B2A7B; /* Color morado que coincide con la paleta existente */
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem; /* Hace que el fondo sea circular/ovalado */
+  margin: 0.5rem 0 1rem;
+  box-shadow: 0 4px 8px rgba(75, 42, 123, 0.2); /* Sombra sutil */
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: capitalize; /* Hace que la primera letra de cada palabra sea mayúscula */
 }
 
 /* Responsive Design */

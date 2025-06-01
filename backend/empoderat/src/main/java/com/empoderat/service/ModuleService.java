@@ -26,12 +26,6 @@ public class ModuleService {
                 .collect(Collectors.toList());
     }
 
-    public ModuleResponse getModuleById(Long id) {
-        Module module = moduleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el módulo con ID: " + id));
-        return ModuleResponse.fromEntity(module);
-    }
-
     public List<ModuleResponse> getModulesByCourse(Long courseId) {
         // Verificar si el curso existe
         if (!courseRepository.existsById(courseId)) {
@@ -106,5 +100,12 @@ public class ModuleService {
         existingModule.setStatus(status);
         Module savedModule = moduleRepository.save(existingModule);
         return ModuleResponse.fromEntity(savedModule);
+    }
+
+    // Añade este método a tu moduleService en src/services/api.js
+    public ModuleResponse getModuleById(Long moduleId) {
+        Module module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el módulo con ID: " + moduleId));
+        return ModuleResponse.fromEntity(module);
     }
 }

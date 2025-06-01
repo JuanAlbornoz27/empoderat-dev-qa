@@ -144,6 +144,17 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/admin/modulesManagement"
+            element={
+              <ProtectedRoute adminOnly>
+                <ModuleManagement />
+              </ProtectedRoute>
+            }
+          />
+
+
           <Route
             path="/admin/categories"
             element={

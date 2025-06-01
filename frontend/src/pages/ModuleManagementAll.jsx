@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/HeaderAdmin';
 import '../styles/ModuleManagementAll.css';
 // IMPORTAR LOS DATOS MOCK (solo como fallback)
@@ -15,6 +16,7 @@ if (!document.querySelector('link[href*="font-awesome"]')) {
 }
 
 const ModuleManagement = () => {
+    const navigate = useNavigate(); // Añadir esta línea
     const [modules, setModules] = useState([]);
     const [courses, setCourses] = useState([]); // Iniciar como array vacío
     const [coursesLoading, setCoursesLoading] = useState(true); // Estado para carga de cursos
@@ -854,12 +856,13 @@ const ModuleManagement = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="text-center">
-                                                                <a
-                                                                    href={`/admin/resources/module/${module.id}`}
+                                                                <button
+                                                                    onClick={() => navigate(`/admin/modulesManagement`, { state: { moduleId: module.id, moduleName: module.name } })}
                                                                     className="resources-link"
+                                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', color: '#007bff' }}
                                                                 >
                                                                     Administrar recursos
-                                                                </a>
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     ))
