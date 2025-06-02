@@ -28,7 +28,8 @@
 
 .courses-slider {
     position: relative;
-    margin: 0 3rem;
+    width: 80%;
+    margin: 0 auto;
 }
 
 .slider-controls {
