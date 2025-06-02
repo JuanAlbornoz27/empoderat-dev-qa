@@ -118,7 +118,7 @@ export const courseService = {
 
   getCoursesByCategory: (categoryId) => apiClient.get(`/courses/category/${categoryId}`),
   searchCourses: (term) => apiClient.get(`/courses/search`, { params: { term } }),
-  
+
   // CORREGIDO: Apunta al endpoint correcto del EnrollmentController
   getMyCourses: () => apiClient.get('/my-courses')
 };
@@ -169,9 +169,15 @@ export const userService = {
 
 // Servicio de aprendiz
 export const aprendizService = {
-  getCourses: () => apiClient.get('/aprendiz/courses'),
+  // Inscribirse en un curso
   enrollCourse: (courseId) => apiClient.post(`/aprendiz/courses/${courseId}/enroll`),
-  getProgress: (courseId) => apiClient.get(`/aprendiz/courses/${courseId}/progress`)
+  // Cancelar inscripción a un curso
+  dropCourse: (courseId) => apiClient.delete(`/aprendiz/courses/${courseId}/drop`),
+  // Obtener cursos disponibles
+  getAvailableCourses: () => apiClient.get('/aprendiz/courses'),
+  // Obtener el progreso
+  updateProgress: (courseId, progress) => apiClient.put(`/aprendiz/courses/${courseId}/progress`, { progress }),
+
 };
 
 // Servicio de administrador
@@ -198,13 +204,10 @@ export const resourceService = {
   deleteResource: (id) => apiClient.delete(`/resources/${id}`)
 };
 
-// Servicio de inscripciones - CORREGIDO
+// Servicio de inscripciones 
 export const enrollmentService = {
   // Obtener cursos inscritos - Usa el endpoint correcto
   getEnrolledCourses: () => apiClient.get('/my-courses'),
-
-  // Inscribirse en un curso
-  enrollInCourse: (courseId) => apiClient.post(`/my-courses/${courseId}`),
 
   // Desinscribirse de un curso
   unenrollFromCourse: (courseId) => apiClient.delete(`/my-courses/${courseId}`)

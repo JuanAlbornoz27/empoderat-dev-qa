@@ -14,7 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class CourseService {
+
+    private static final Logger log = LoggerFactory.getLogger(CourseService.class);
 
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
@@ -150,35 +153,31 @@ public class CourseService {
      */
     @Transactional(readOnly = true)
     public List<CourseResponse> getEnrolledCoursesByEmail(String email) {
+        log.info("Buscando cursos inscritos para el usuario con email: {}", email);
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Usuario no encontrado con email: {}", email);
+                    return new EntityNotFoundException("Usuario no encontrado con email: " + email);
+                });
 
-        return user.getEnrolledCourses().stream()
-                .map(CourseResponse::fromEntity)
-                .collect(Collectors.toList());
-    }
+        log.info("Usuario encontrado con ID: {}", user.getId());
 
-    /**
-     * Inscribe a un usuario en un curso por correo electrónico.
-     */
-    @Transactional
-    public void enrollUserInCourse(String email, Long courseId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
-
-        if (user.getEnrolledCourses().contains(course)) {
-            throw new IllegalStateException("El usuario ya está inscrito en este curso");
+        // Verificar si la colección de cursos inscritos no es null
+        if (user.getEnrolledCourses() == null) {
+            log.info("El usuario no tiene cursos inscritos (colección null)");
+            return Collections.emptyList();
         }
 
-        user.getEnrolledCourses().add(course);
-        course.setEnrolledCount(course.getEnrolledCount() + 1);
+        List<CourseResponse> enrolledCourses = user.getEnrolledCourses().stream()
+                .map(CourseResponse::fromEntity)
+                .collect(Collectors.toList());
 
-        userRepository.save(user);
-        courseRepository.save(course);
+        log.info("Encontrados {} cursos inscritos para el usuario", enrolledCourses.size());
+        return enrolledCourses;
     }
+
+    
 
     /**
      * Desinscribe a un usuario de un curso por correo electrónico.

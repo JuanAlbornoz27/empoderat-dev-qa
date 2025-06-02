@@ -11,7 +11,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  * La anotación @SpringBootApplication combina:
  * - @Configuration: Marca la clase como fuente de definiciones de beans
  * - @EnableAutoConfiguration: Habilita la autoconfiguración de Spring Boot
- * - @ComponentScan: Habilita el escaneo de componentes en el paquete actual y subpaquetes
+ * - @ComponentScan: Habilita el escaneo de componentes en el paquete actual y
+ * subpaquetes
  */
 @SpringBootApplication
 @EnableJpaAuditing // Habilita auditoría para entidades JPA (created_at, updated_at, etc.)
@@ -25,15 +26,15 @@ public class EmpoderatApplication {
     public static void main(String[] args) {
         SpringApplication.run(EmpoderatApplication.class, args);
     }
-    
+
     // Aquí puedes agregar beans adicionales si los necesitas
-    
+
     /*
-    @Bean
-    public CommandLineRunner demoData(UserRepository userRepository) {
-        return args -> {
-            // Código para inicializar datos de prueba si es necesario
-        };
-    }
-    */
+     * @Bean
+     * public CommandLineRunner demoData(UserRepository userRepository) {
+     * return args -> {
+     * // Código para inicializar datos de prueba si es necesario
+     * };
+     * }
+     */
 }
