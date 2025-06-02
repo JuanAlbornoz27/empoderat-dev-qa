@@ -7,18 +7,17 @@ import com.empoderat.model.mysql.Course;
 import com.empoderat.model.mysql.User;
 import com.empoderat.repository.mysql.CategoryRepository;
 import com.empoderat.repository.mysql.CourseRepository;
+import com.empoderat.repository.mysql.ModuleRepository;
 import com.empoderat.repository.mysql.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +28,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ModuleRepository moduleRepository; 
 
     /**
      * Obtiene todos los cursos sin paginación
@@ -125,11 +125,16 @@ public class CourseService {
      */
     @Transactional
     public void deleteCourse(Long id) {
-        if (!courseRepository.existsById(id)) {
-            throw new EntityNotFoundException("Curso no encontrado con ID: " + id);
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado con ID: " + id));
+
+        // Verificar si el curso tiene módulos
+        if (!course.getModules().isEmpty()) {
+            // Primero eliminar los módulos asociados
+            moduleRepository.deleteAll(course.getModules());
         }
-        // Considera la lógica de qué sucede si el curso tiene módulos
-        courseRepository.deleteById(id);
+        // Luego eliminar el curso
+        courseRepository.delete(course);
     }
 
     /**
