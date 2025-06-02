@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -50,9 +52,9 @@ public class User {
     private String keycloakId;
 
     // Relación muchos a muchos con Cursos
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany
     @JoinTable(name = "user_courses", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
-    private List<Course> enrolledCourses = new ArrayList<>();
+    private Set<Course> enrolledCourses = new HashSet<>();
 
     // Relación muchos a muchos con Módulos
     @ManyToMany(fetch = FetchType.LAZY)

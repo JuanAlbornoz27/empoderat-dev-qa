@@ -68,8 +68,8 @@ export const authService = {
       localStorage.setItem('userInfo', JSON.stringify({
         userId: response.data.userId,
         name: response.data.name,
-        email: response.data.email, 
-        role: response.data.role.replace('ROLE_', '') 
+        email: response.data.email,
+        role: response.data.role.replace('ROLE_', '')
       }));
     }
     console.log('Login successful:', response.data);
@@ -115,8 +115,12 @@ export const courseService = {
   uploadCourseImage: (id, formData) => apiClient.post(`/courses/${id}/image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+
   getCoursesByCategory: (categoryId) => apiClient.get(`/courses/category/${categoryId}`),
-  searchCourses: (term) => apiClient.get(`/courses/search`, { params: { term } })
+  searchCourses: (term) => apiClient.get(`/courses/search`, { params: { term } }),
+  
+  // CORREGIDO: Apunta al endpoint correcto del EnrollmentController
+  getMyCourses: () => apiClient.get('/my-courses')
 };
 
 // Servicio de categorías
@@ -138,15 +142,15 @@ export const moduleService = {
   getModuleById: (id) => apiClient.get(`/modules/${id}`),
   getAllModules: () => apiClient.get('/modules'),
   searchModules: (term) => apiClient.get('/modules/search', { params: { term } }),
-  
+
   // Operaciones CRUD
   createModule: (moduleData) => apiClient.post('/modules', moduleData),
   updateModule: (id, moduleData) => apiClient.put(`/modules/${id}`, moduleData),
   deleteModule: (id) => apiClient.delete(`/modules/${id}`),
-  
+
   // Actualización de estado
   updateModuleStatus: (id, status) => apiClient.patch(`/modules/${id}/status`, { status }),
-  
+
   // Upload de recursos y archivos
   uploadModuleImage: (id, formData) => apiClient.post(`/modules/${id}/image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -181,10 +185,10 @@ export const adminService = {
 export const resourceService = {
   // Obtener recursos
   getResourcesByModule: (moduleId) => apiClient.get(`/resources/module/${moduleId}`),
-  
+
   // Crear recurso
   createResource: (resource) => apiClient.post('/resources', resource),
-  
+
   // Subir archivo de recurso
   uploadResourceFile: (formData) => apiClient.post('/resources/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -192,6 +196,18 @@ export const resourceService = {
 
   // Eliminar recurso
   deleteResource: (id) => apiClient.delete(`/resources/${id}`)
+};
+
+// Servicio de inscripciones - CORREGIDO
+export const enrollmentService = {
+  // Obtener cursos inscritos - Usa el endpoint correcto
+  getEnrolledCourses: () => apiClient.get('/my-courses'),
+
+  // Inscribirse en un curso
+  enrollInCourse: (courseId) => apiClient.post(`/my-courses/${courseId}`),
+
+  // Desinscribirse de un curso
+  unenrollFromCourse: (courseId) => apiClient.delete(`/my-courses/${courseId}`)
 };
 
 // Función auxiliar para refresh token
