@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import { courseService, categoryService } from '../services/api';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/HeaderAdmin';
 import '../styles/CourseManagement.css';
 // Mantener los mocks como fallback
@@ -106,18 +107,12 @@ const CourseManagement = () => {
             setSuccessMessage('');
 
             let response;
-             if (searchTerm) {
+            if (searchTerm) {
                 response = await courseService.searchCourses(searchTerm);
-            } else if (categoryFilter !== 'all' && categories.length > 0) {
-                const categoryObject = categories.find(cat => cat.name === categoryFilter || cat.id === categoryFilter);
-                const categoryIdToFilter = categoryObject ? categoryObject.id : null;
-                if (categoryIdToFilter) {
-                    response = await courseService.getCoursesByCategory(categoryIdToFilter);
-                } else {
-                     response = await courseService.getAllCourses(); // Fallback si no se encuentra ID
-                }
-            }
-             else {
+            } else if (categoryFilter !== 'all') {
+                // Asegurarse de enviar el ID correcto de la categoría
+                response = await courseService.getCoursesByCategory(categoryFilter);
+            } else {
                 response = await courseService.getAllCourses();
             }
 
@@ -127,17 +122,18 @@ const CourseManagement = () => {
                     name: course.name,
                     status: course.status,
                     description: course.description,
-                    categoryId: course.category?.id,
-                    categoryNameDirect: course.category?.name,
+                    categoryId: course.category?.id || course.categoryId,
+                    category: course.category?.name,
                     enrolledCount: course.enrolledCount || 0,
                     estimatedDuration: `${course.estimatedDuration || 0}h`,
                     imageUrl: course.imageUrl,
                     moduleCount: course.moduleCount || 0
                 }));
 
+                // Aplicar filtro de estado si está seleccionado
                 let filteredCourses = formattedCourses;
                 if (statusFilter !== 'all') {
-                    filteredCourses = formattedCourses.filter(course => course.status === statusFilter);
+                    filteredCourses = filteredCourses.filter(course => course.status === statusFilter);
                 }
 
                 const startIndex = (currentPage - 1) * pageSize;
@@ -147,17 +143,15 @@ const CourseManagement = () => {
                 setCourses(paginatedCourses);
                 setTotalElements(filteredCourses.length);
                 setTotalPages(Math.ceil(filteredCourses.length / pageSize));
-            } else {
-                 throw new Error("No se recibieron datos de cursos o la respuesta no tiene el formato esperado.");
             }
         } catch (err) {
-            setError(`Error al cargar los cursos: ${err.message}. Usando datos mock.`);
+            setError('Error al cargar los cursos. Usando datos mock.');
             console.error('Error cargando cursos:', err);
-            useMockData(); // Fallback a mock
+            useMockData();
         } finally {
             setLoading(false);
         }
-    }, [currentPage, searchTerm, statusFilter, categoryFilter, pageSize, categories, getCategoryNameById]);
+    }, [currentPage, searchTerm, statusFilter, categoryFilter, pageSize]);
 
 
     useEffect(() => {
@@ -470,10 +464,17 @@ const CourseManagement = () => {
                                 <option value="INACTIVE">Inactivo</option>
                             </select>
                             
-                            <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1);}} className="filter-select">
+                            <select 
+                                value={categoryFilter} 
+                                onChange={(e) => { 
+                                    setCategoryFilter(e.target.value); 
+                                    setCurrentPage(1);
+                                }} 
+                                className="filter-select"
+                            >
                                 <option value="all">Todas las categorías</option>
                                 {categories.map(category => (
-                                    <option key={category.id || category.name} value={category.id || category.name}>
+                                    <option key={category.id} value={category.id}>
                                         {category.name}
                                     </option>
                                 ))}
@@ -576,8 +577,14 @@ const CourseManagement = () => {
                                                     </div>
                                                 </td>
                                                 <td className="text-center">
-                                                     <a href={`/admin/modules/course/${course.id}`} className="modules-link">Ver ({course.moduleCount || 0})</a>
-                                                </td>
+                                                    <Link
+                                                        to={`/admin/modules/course/${course.id}`}
+                                                        state={{ courseName: course.name }} // Pass course name via state
+                                                        className="modules-link"
+                                                    >
+                                                        Administrar ({course.moduleCount || 0})
+                                                    </Link>
+                                                 </td>
                                             </tr>
                                         ) : (
                                             <tr key={course.id}>

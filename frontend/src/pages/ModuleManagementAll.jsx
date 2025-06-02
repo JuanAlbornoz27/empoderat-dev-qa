@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Header from '../components/HeaderAdmin';
 import '../styles/ModuleManagementAll.css';
 // IMPORTAR LOS DATOS MOCK (solo como fallback)
 import { mockCourses } from '../data/mockCourses';
 import { mockModules } from '../data/mockModules';
-import { moduleService, courseService } from '../services/api'; // Importar ambos servicios
+import { moduleService, courseService } from '../services/api';
 
 // Asegurar que Font Awesome esté disponible
 if (!document.querySelector('link[href*="font-awesome"]')) {
@@ -17,6 +17,8 @@ if (!document.querySelector('link[href*="font-awesome"]')) {
 
 const ModuleManagement = () => {
     const navigate = useNavigate(); // Añadir esta línea
+    const { courseId: courseIdFromUrl } = useParams(); 
+    const location = useLocation(); 
     const [modules, setModules] = useState([]);
     const [courses, setCourses] = useState([]); // Iniciar como array vacío
     const [coursesLoading, setCoursesLoading] = useState(true); // Estado para carga de cursos
@@ -57,6 +59,64 @@ const ModuleManagement = () => {
     // Module search state
     const [moduleSearchTerm, setModuleSearchTerm] = useState('');
 
+    const loadModules = useCallback(async () => {
+        if (!selectedCourse) return;
+            setLoading(true);
+            setError(null);
+            try {
+                // Intentar obtener datos de la API
+                const response = await moduleService.getModulesByCourse(selectedCourse.id);
+                
+                if (response && response.data) {
+                    // Aplicar filtros localmente si es necesario
+                    let filteredModules = response.data;
+                    
+                    if (moduleSearchTerm.trim() !== '') {
+                        filteredModules = filteredModules.filter(module =>
+                            module.name.toLowerCase().includes(moduleSearchTerm.toLowerCase()) ||
+                            (module.description && module.description.toLowerCase().includes(moduleSearchTerm.toLowerCase()))
+                        );
+                    }
+                    
+                    // Aplicar paginación
+                    const startIndex = (currentPage - 1) * pageSize;
+                    const endIndex = startIndex + pageSize;
+                    const paginatedModules = filteredModules.slice(startIndex, endIndex);
+                    
+                    setModules(paginatedModules);
+                    setTotalElements(filteredModules.length);
+                    setTotalPages(Math.ceil(filteredModules.length / pageSize));
+                } else {
+                    throw new Error('No se recibieron datos de la API');
+                }
+        } catch (apiError) {
+            console.error('Error al cargar módulos desde la API:', apiError);
+            console.warn('Usando datos mock como fallback debido a error de API');
+            
+            // Fallback a datos mock
+            let courseModules = mockModules.filter(module => module.courseId === selectedCourse.id);
+            
+            // Aplicar filtro de búsqueda de módulos si existe
+            if (moduleSearchTerm.trim() !== '') {
+                courseModules = courseModules.filter(module =>
+                    module.name.toLowerCase().includes(moduleSearchTerm.toLowerCase()) ||
+                    module.description.toLowerCase().includes(moduleSearchTerm.toLowerCase())
+                );
+            }
+            
+            // Aplicar paginación
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedModules = courseModules.slice(startIndex, endIndex);
+            
+            setModules(paginatedModules);
+            setTotalElements(courseModules.length);
+            setTotalPages(Math.ceil(courseModules.length / pageSize));
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedCourse, currentPage, moduleSearchTerm, pageSize]);
+
     // Cargar cursos al iniciar el componente
     useEffect(() => {
         const fetchCourses = async () => {
@@ -93,17 +153,46 @@ const ModuleManagement = () => {
         fetchCourses();
     }, []);
 
+    // useEffect to handle pre-selection of course if courseId is in the URL
+    useEffect(() => {
+        if (courseIdFromUrl && courses.length > 0) {
+            const preselectedCourse = courses.find(c => c.id.toString() === courseIdFromUrl);
+            if (preselectedCourse) {
+                // Use courseName from state if available, otherwise from the fetched course title
+                const courseName = location.state?.courseName || preselectedCourse.title;
+                setSelectedCourse({ id: preselectedCourse.id, title: courseName });
+                setCourseSearchTerm(courseName); // Set search term for display
+                setShowSuggestions(false); // Hide suggestions dropdown
+                setCurrentPage(1); // Reset module pagination
+                setModuleSearchTerm(''); // Reset module search term
+            } else {
+                // Handle case where courseIdFromUrl doesn't match any loaded course
+                console.warn(`Course with ID ${courseIdFromUrl} not found.`);
+                // Optionally, clear selectedCourse or navigate to an error page/default state
+                setSelectedCourse(null); 
+                setCourseSearchTerm('');
+            }
+        }
+    }, [courseIdFromUrl, courses, location.state]); // Depend on courseIdFromUrl, loaded courses, and location.state
+
+
     // Update filtered courses when search term changes
     useEffect(() => {
         if (courseSearchTerm.trim() === '') {
             setFilteredCourses([]);
             setShowSuggestions(false);
+            // If clearing search term and no course was selected via URL, clear selected course
+            if (!courseIdFromUrl) {
+                 setSelectedCourse(null);
+            }
         } else {
             const filtered = courses.filter(course =>
                 course.title.toLowerCase().includes(courseSearchTerm.toLowerCase())
             );
             setFilteredCourses(filtered);
-            setShowSuggestions(true);
+            if (courses.find(c => c.title.toLowerCase() === courseSearchTerm.toLowerCase())?.id.toString() !== courseIdFromUrl) {
+                setShowSuggestions(true);
+            }
         }
     }, [courseSearchTerm, courses]);
 
@@ -111,74 +200,13 @@ const ModuleManagement = () => {
     useEffect(() => {
         if (selectedCourse) {
             loadModules();
-        }
-    }, [selectedCourse, currentPage, moduleSearchTerm]);
+        } else {
+            setModules([]);
+            setTotalElements(0);
+            setTotalPages(1);
+         }
 
-    // Cargar módulos del curso seleccionado
-    const loadModules = async () => {
-        if (!selectedCourse) return;
-        
-        try {
-            setLoading(true);
-            setError(null);
-            
-            try {
-                // Intentar obtener datos de la API
-                const response = await moduleService.getModulesByCourse(selectedCourse.id);
-                
-                if (response && response.data) {
-                    // Aplicar filtros localmente si es necesario
-                    let filteredModules = response.data;
-                    
-                    if (moduleSearchTerm.trim() !== '') {
-                        filteredModules = filteredModules.filter(module =>
-                            module.name.toLowerCase().includes(moduleSearchTerm.toLowerCase()) ||
-                            (module.description && module.description.toLowerCase().includes(moduleSearchTerm.toLowerCase()))
-                        );
-                    }
-                    
-                    // Aplicar paginación
-                    const startIndex = (currentPage - 1) * pageSize;
-                    const endIndex = startIndex + pageSize;
-                    const paginatedModules = filteredModules.slice(startIndex, endIndex);
-                    
-                    setModules(paginatedModules);
-                    setTotalElements(filteredModules.length);
-                    setTotalPages(Math.ceil(filteredModules.length / pageSize));
-                } else {
-                    throw new Error('No se recibieron datos de la API');
-                }
-            } catch (apiError) {
-                console.error('Error al cargar módulos desde la API:', apiError);
-                console.warn('Usando datos mock como fallback debido a error de API');
-                
-                // Fallback a datos mock
-                let courseModules = mockModules.filter(module => module.courseId === selectedCourse.id);
-                
-                // Aplicar filtro de búsqueda de módulos si existe
-                if (moduleSearchTerm.trim() !== '') {
-                    courseModules = courseModules.filter(module =>
-                        module.name.toLowerCase().includes(moduleSearchTerm.toLowerCase()) ||
-                        module.description.toLowerCase().includes(moduleSearchTerm.toLowerCase())
-                    );
-                }
-                
-                // Aplicar paginación
-                const startIndex = (currentPage - 1) * pageSize;
-                const endIndex = startIndex + pageSize;
-                const paginatedModules = courseModules.slice(startIndex, endIndex);
-                
-                setModules(paginatedModules);
-                setTotalElements(courseModules.length);
-                setTotalPages(Math.ceil(courseModules.length / pageSize));
-            }
-        } catch (err) {
-            setError('Error al cargar los módulos');
-            console.error('Error loading modules:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [selectedCourse, loadModules]);
 
     const handleCourseSelect = (course) => {
         setSelectedCourse(course);
