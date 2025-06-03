@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CursoCard from './CourseCard';
 import '../styles/CoursesLearner.css';
 import Header from "../components/HeaderLearner";
-import { enrollmentService, moduleService } from '../services/api';
+import { enrollmentService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 const MisCursos = () => {
@@ -14,7 +14,6 @@ const MisCursos = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Verificar que el usuario esté autenticado antes de hacer la petición
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -26,7 +25,6 @@ const MisCursos = () => {
         setError(null);
         const response = await enrollmentService.getEnrolledCourses();
 
-        // Adaptamos el formato igual que en Courses.jsx
         const adaptedCourses = response.data.map(course => ({
           id: course.id,
           nombre: course.title || course.name,
@@ -41,7 +39,6 @@ const MisCursos = () => {
       } catch (err) {
         console.error('Error al cargar los cursos inscritos:', err);
 
-        // Manejar diferentes tipos de errores
         if (err.response?.status === 401) {
           setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
           navigate('/login');
@@ -63,12 +60,12 @@ const MisCursos = () => {
     fetchMyCourses();
   }, [isAuthenticated, user, navigate]);
 
-  // Función para ir a la vista detallada del curso con sus módulos
-  const handleTomarLeccion = (cursoId) => {
+  // Función para continuar con el curso - CORREGIDA
+  const handleContinuar = (cursoId) => {
+    // Navegar usando parámetros de URL en lugar de state
     navigate(`/curso/${cursoId}`);
   };
 
-  // Función para reintentar la carga
   const handleRetry = () => {
     window.location.reload();
   };
@@ -140,7 +137,7 @@ const MisCursos = () => {
             <CursoCard
               key={curso.id}
               curso={curso}
-              onInscribir={handleTomarLeccion}
+              onInscribir={handleContinuar}
               botonTexto="Tomar lección"
             />
           ))}
