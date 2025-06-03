@@ -3,16 +3,21 @@ package com.empoderat.controller;
 import com.empoderat.dto.course.CourseRequest;
 import com.empoderat.dto.course.CourseResponse;
 import com.empoderat.service.CourseService;
+import com.empoderat.util.SecurityUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
@@ -20,8 +25,11 @@ import java.util.List;
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
 @Tag(name = "Cursos", description = "Endpoints para gestión de cursos")
+@Slf4j
+
 public class CourseController {
 
+    private final SecurityUtil securityUtil;
     private final CourseService courseService;
 
     @GetMapping
@@ -35,7 +43,7 @@ public class CourseController {
     @Operation(summary = "Obtener curso por ID", description = "Devuelve un curso específico por su ID")
     public ResponseEntity<CourseResponse> getCourseById(@PathVariable Long id) {
         try {
-            CourseResponse course = courseService.getCourseById(id); 
+            CourseResponse course = courseService.getCourseById(id);
             return ResponseEntity.ok(course);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -58,13 +66,13 @@ public class CourseController {
 
     @PostMapping
     @Operation(summary = "Crear nuevo curso", description = "Crea un nuevo curso con los datos proporcionados")
-    @SecurityRequirement(name = "jwt") 
+    @SecurityRequirement(name = "jwt")
     public ResponseEntity<CourseResponse> createCourse(@RequestBody CourseRequest courseRequest) {
         try {
-            CourseResponse createdCourse = courseService.createCourse(courseRequest); 
+            CourseResponse createdCourse = courseService.createCourse(courseRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCourse);
-        } catch (IllegalArgumentException e) { 
-            return ResponseEntity.badRequest().build(); 
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             // Log e
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -74,7 +82,8 @@ public class CourseController {
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar curso existente", description = "Actualiza los datos de un curso existente por su ID")
     @SecurityRequirement(name = "jwt")
-    public ResponseEntity<CourseResponse> updateCourse(@PathVariable Long id, @RequestBody CourseRequest courseRequest) {
+    public ResponseEntity<CourseResponse> updateCourse(@PathVariable Long id,
+            @RequestBody CourseRequest courseRequest) {
         try {
             CourseResponse updatedCourse = courseService.updateCourse(id, courseRequest);
             return ResponseEntity.ok(updatedCourse);
@@ -100,4 +109,5 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 }

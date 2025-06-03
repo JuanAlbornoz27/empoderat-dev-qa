@@ -124,16 +124,15 @@ const CourseManagement = () => {
             if (response && response.data) {
                 const formattedCourses = response.data.map(course => ({
                     id: course.id,
-                    name: course.title || course.name,
-                    status: course.status || 'ACTIVE',
+                    name: course.name,
+                    status: course.status,
                     description: course.description,
                     categoryId: course.category?.id,
-                    category: course.category?.name || getCategoryNameById(course.categoryId) || 'Sin categoría',
-                    enrolledCount: course.enrollmentCount || 0,
+                    categoryNameDirect: course.category?.name,
+                    enrolledCount: course.enrolledCount || 0,
                     estimatedDuration: `${course.estimatedDuration || 0}h`,
-                    imageUrl: course.imageUrl || null,
-                    moduleCount: course.moduleCount || 0,
-                    activeModuleCount: course.activeModuleCount || 0 
+                    imageUrl: course.imageUrl,
+                    moduleCount: course.moduleCount || 0
                 }));
 
                 let filteredCourses = formattedCourses;
@@ -344,10 +343,19 @@ const CourseManagement = () => {
     
     // Manejador para eliminar un curso
     const handleDeleteCourse = async (courseId) => {
-        if (window.confirm('¿Está seguro de que desea eliminar este curso?')) {
+        const course = courses.find(c => c.id === courseId);
+        const hasModules = course.moduleCount > 0;
+        
+        let confirmMessage = '¿Está seguro de que desea eliminar este curso?';
+        if (hasModules) {
+            confirmMessage = `Este curso tiene ${course.moduleCount} módulo(s) asociado(s). ¿Está seguro de que desea eliminarlo? Esta acción también eliminará todos los módulos.`;
+        }
+
+        if (window.confirm(confirmMessage)) {
             try {
-                setSuccessMessage(''); setError(null);
-                await courseService.deleteCourse(courseId); 
+                setSuccessMessage('');
+                setError(null);
+                await courseService.deleteCourse(courseId);
                 
                 setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
                 
@@ -358,15 +366,15 @@ const CourseManagement = () => {
                 if (courses.length === 1 && currentPage > 1) {
                     setCurrentPage(currentPage - 1);
                 } else if (courses.length === 1 && currentPage === 1 && newTotalElements === 0) {
-                    // Si era el último curso en la única página
-                    loadCourses(); // Recargar para mostrar "No se encontraron cursos"
+                    loadCourses();
                 }
+                
                 setSuccessMessage('Curso eliminado exitosamente.');
                 setTimeout(() => setSuccessMessage(''), 3000);
             } catch (err) {
-                setError('Error al eliminar el curso.');
+                setError('Error al eliminar el curso: ' + (err.response?.data?.message || err.message));
                 console.error('Error eliminando curso:', err);
-                setTimeout(() => setError(null), 3000);
+                setTimeout(() => setError(null), 5000);
             }
         }
     };
@@ -506,10 +514,26 @@ const CourseManagement = () => {
                                         </td>
                                         <td><textarea name="description" value={newCourseData.description} onChange={(e) => handleInputChange(e, 'new')} placeholder="Descripción" className="edit-textarea"/></td>
                                         <td>
-                                            <select name="categoryId" value={newCourseData.categoryId} onChange={(e) => handleInputChange(e, 'new')} className="edit-select">
-                                                <option value="">Seleccione categoría</option>
-                                                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                                            </select>
+                                            {editingCourseId === course.id ? (
+                                                <select 
+                                                    name="categoryId" 
+                                                    value={editingCourseData.categoryId} 
+                                                    onChange={(e) => handleInputChange(e, 'edit')} 
+                                                    className="edit-select"
+                                                >
+                                                    <option value="">Seleccione categoría</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat.id} value={cat.id}>
+                                                            {cat.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                            <span className="category-display">
+                                                {/* Use the direct name if available; otherwise, try lookup or show 'Sin categoría' */}
+                                                {course.categoryNameDirect || (course.categoryId ? getCategoryNameById(course.categoryId) : 'Sin categoría')}
+                                            </span>
+                                            )}
                                         </td>
                                         <td><span className="text-center">-</span></td> {/* Inscritos no editable al crear */}
                                         <td><input type="text" name="estimatedDuration" value={newCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'new')} placeholder="Ej: 20h" className="edit-input short-input"/></td>
@@ -609,7 +633,7 @@ const CourseManagement = () => {
                         </div>
                         <div className="results-info">
                             Resultado {totalElements > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements}
-                        </div>
+                            </div>
                     </div>
                 </section>
             </main>
