@@ -156,7 +156,7 @@ const CourseManagement = () => {
 
     useEffect(() => {
         loadCourses();
-    }, [loadCourses]); // Ahora loadCourses es una dependencia estable gracias a useCallback
+    }, [loadCourses]);
 
 
     const useMockData = () => {
