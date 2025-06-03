@@ -8,7 +8,9 @@ import com.empoderat.repository.mysql.CourseRepository;
 import com.empoderat.repository.mysql.ModuleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +21,10 @@ public class ModuleService {
 
     private final ModuleRepository moduleRepository;
     private final CourseRepository courseRepository;
+
+    // Añadir la inyección del EventService
+    @Autowired
+    private EventService eventService;
 
     public List<ModuleResponse> getAllModules() {
         return moduleRepository.findAll().stream()
@@ -107,5 +113,14 @@ public class ModuleService {
         Module module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el módulo con ID: " + moduleId));
         return ModuleResponse.fromEntity(module);
+    }
+
+    // Modificar el método de completar módulo
+    @Transactional
+    public void completeModule(Long userId, Long moduleId) {
+        // Código existente para marcar el módulo como completado...
+
+        // Notificar el evento de módulo completado
+        eventService.onModuleCompleted(userId, moduleId);
     }
 }

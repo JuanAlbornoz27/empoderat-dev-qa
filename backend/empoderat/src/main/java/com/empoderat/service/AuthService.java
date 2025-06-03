@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,10 @@ public class AuthService {
 
     @Value("${keycloak.credentials.secret}")
     private String clientSecret;
+
+    // Reemplazar la inyección actual de EstadisticaService por EventService
+    @Autowired
+    private EventService eventService;
 
     private String getTokenUrl() {
         return keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
@@ -123,6 +128,9 @@ public class AuthService {
             userRepository.save(user);
             log.info("Usuario guardado en MySQL con ID: {}", user.getId());
 
+            // Notificar el evento de registro
+            eventService.onUserRegistered(user.getId());
+            
             return keycloakId;
         } catch (Exception e) {
             log.error("Error en registro: ", e);
