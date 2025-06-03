@@ -19,6 +19,7 @@ public class ModuleResponse {
     private Module.Status status;
     private Long courseId;
     private String courseName;
+    private boolean completed; // Nuevo campo para indicar si el módulo está completado
 
     /**
      * Convierte una entidad Module a un DTO ModuleResponse
@@ -32,6 +33,7 @@ public class ModuleResponse {
                 .status(module.getStatus())
                 .courseId(module.getCourse().getId())
                 .courseName(module.getCourse().getName())
+                .completed(false) // Por defecto false, se debe establecer externamente
                 .build();
     }
 }
