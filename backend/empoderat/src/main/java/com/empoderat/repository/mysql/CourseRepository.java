@@ -1,10 +1,7 @@
 package com.empoderat.repository.mysql;
 
-import com.empoderat.dto.course.CourseResponse;
 import com.empoderat.model.mysql.Category;
 import com.empoderat.model.mysql.Course;
-import com.empoderat.model.mysql.Course.Status;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param; // Añade esta importación
@@ -15,13 +12,12 @@ import java.util.List;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    List<Course> findByStatus(Course.Status status);
-
-    List<Course> findByCategoryId(Long categoryId);
 
     List<Course> findByCategory(Category category);
 
     List<Course> findByNameContainingIgnoreCase(String name);
+
+    List<Course> findByStatus(Course.Status status);
 
     // Añade estas consultas al repositorio existente
 

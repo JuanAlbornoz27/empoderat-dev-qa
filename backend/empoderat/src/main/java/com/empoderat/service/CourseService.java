@@ -411,4 +411,82 @@ public class CourseService {
             // No interrumpir el flujo si falla la notificación
         }
     }
+
+    /**
+     * Desinscribe a un usuario de un curso por correo electrónico.
+     *
+     * @param email    Correo electrónico del usuario
+     * @param courseId ID del curso del que se desea desinscribir
+     * @throws EntityNotFoundException si el usuario o el curso no existen
+     * @throws IllegalStateException   si el usuario no está inscrito en el curso
+     */
+    @Transactional
+    public void unenrollUserFromCourse(String email, Long courseId) {
+        log.info("Desinscribiendo al usuario {} del curso {}", email, courseId);
+        
+        // Buscar el usuario por email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con email: " + email));
+                
+        // Buscar el curso por ID
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado con ID: " + courseId));
+                
+        // Verificar si el usuario está inscrito en el curso
+        if (!user.getEnrolledCourses().contains(course)) {
+            throw new IllegalStateException("El usuario no está inscrito en este curso");
+        }
+        
+        // Verificar si existe una inscripción en la tabla de inscripciones
+        Optional<Enrollment> enrollment = enrollmentRepository.findByUserIdAndCourseId(user.getId(), courseId);
+        if (enrollment.isPresent()) {
+            // Si existe una inscripción formal, eliminarla
+            enrollmentRepository.delete(enrollment.get());
+        }
+        
+        // Remover el curso de la lista de cursos inscritos del usuario
+        user.getEnrolledCourses().remove(course);
+        
+        // Decrementar el contador de inscritos en el curso
+        course.setEnrolledCount(Math.max(0, course.getEnrolledCount() - 1));
+        
+        // Guardar los cambios
+        userRepository.save(user);
+        courseRepository.save(course);
+        
+        log.info("Usuario {} desinscrito exitosamente del curso {}", email, courseId);
+    }
+
+    /**
+     * Obtiene los cursos en los que está inscrito un usuario por su email
+     * 
+     * @param email Email del usuario
+     * @return Lista de cursos en los que está inscrito el usuario
+     * @throws EntityNotFoundException si el usuario no existe
+     */
+    @Transactional(readOnly = true)
+    public List<CourseResponse> getEnrolledCoursesByEmail(String email) {
+        log.info("Buscando cursos inscritos para el usuario con email: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("Usuario no encontrado con email: {}", email);
+                    return new EntityNotFoundException("Usuario no encontrado con email: " + email);
+                });
+
+        log.info("Usuario encontrado con ID: {}", user.getId());
+
+        // Verificar si la colección de cursos inscritos no es null
+        if (user.getEnrolledCourses() == null) {
+            log.info("El usuario no tiene cursos inscritos (colección null)");
+            return Collections.emptyList();
+        }
+
+        List<CourseResponse> enrolledCourses = user.getEnrolledCourses().stream()
+                .map(CourseResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        log.info("Encontrados {} cursos inscritos para el usuario", enrolledCourses.size());
+        return enrolledCourses;
+    }
 }

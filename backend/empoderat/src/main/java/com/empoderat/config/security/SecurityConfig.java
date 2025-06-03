@@ -64,8 +64,6 @@ public class SecurityConfig {
 
         JwtAuthenticationConverter jwtAuthConverter = new JwtAuthenticationConverter();
         jwtAuthConverter.setJwtGrantedAuthoritiesConverter(keycloakConverter);
-        jwtAuthConverter.setPrincipalClaimName("email");
-
         return jwtAuthConverter;
     }
 
