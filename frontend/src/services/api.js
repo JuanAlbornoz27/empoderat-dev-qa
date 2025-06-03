@@ -3,9 +3,6 @@ import axios from 'axios';
 // Determinar la URL base según el entorno
 const getBaseUrl = () => {
   // Si se proporciona explícitamente una URL en las variables de entorno, usarla
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
   // De lo contrario, usar la URL según el entorno
   if (process.env.NODE_ENV === 'production') {
     return 'http://104.248.58.255:8080/api';
