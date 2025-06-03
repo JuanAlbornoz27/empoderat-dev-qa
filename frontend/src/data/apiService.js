@@ -39,12 +39,12 @@ export const getCourses = async () => {
     const data = await response.json();
     return data;
     */
-    
+
     // Simulación temporal hasta que el backend esté listo
     await simularRetardo();
     console.log("Devolviendo datos simulados de cursos:", cursosData);
     return cursosData;
-    
+
   } catch (error) {
     console.error("Error al obtener cursos:", error);
     throw error;
@@ -100,12 +100,12 @@ export const getUsuario = async (userId = null) => {
     const data = await response.json();
     return data;
     */
-    
+
     // Simulación temporal hasta que el backend esté listo
     await simularRetardo();
     console.log("Devolviendo datos simulados de usuario:", usuarioData);
     return usuarioData;
-    
+
   } catch (error) {
     console.error("Error al obtener datos del usuario:", error);
     throw error;
