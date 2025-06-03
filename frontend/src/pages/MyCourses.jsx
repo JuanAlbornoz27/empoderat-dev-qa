@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CursoCard from './CourseCard';
 import '../styles/CoursesLearner.css';
 import Header from "../components/HeaderLearner";
-import { enrollmentService } from '../services/api';
+import { enrollmentService, moduleService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 const MisCursos = () => {
@@ -63,10 +63,9 @@ const MisCursos = () => {
     fetchMyCourses();
   }, [isAuthenticated, user, navigate]);
 
-  // Función para continuar con el curso
-  const handleContinuar = (cursoId) => {
-    const cursoSeleccionado = cursos.find(curso => curso.id === cursoId);
-    navigate(`/curso/${cursoId}`, { state: { cursoSeleccionado } });
+  // Función para ir a la vista detallada del curso con sus módulos
+  const handleTomarLeccion = (cursoId) => {
+    navigate(`/curso/${cursoId}`);
   };
 
   // Función para reintentar la carga
@@ -141,7 +140,7 @@ const MisCursos = () => {
             <CursoCard
               key={curso.id}
               curso={curso}
-              onInscribir={handleContinuar}
+              onInscribir={handleTomarLeccion}
               botonTexto="Tomar lección"
             />
           ))}

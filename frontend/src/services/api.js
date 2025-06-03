@@ -136,9 +136,14 @@ export const categoryService = {
 };
 
 // Servicio de módulos
+
 export const moduleService = {
   // Obtención de módulos
   getModulesByCourse: (courseId) => apiClient.get(`/modules/course/${courseId}`),
+
+  // Obtener módulos de un curso para el usuario autenticado con estado de completado
+  getModulesByCourseForUser: (courseId) => apiClient.get(`/modules/course/${courseId}/user`),
+
   getModuleById: (id) => apiClient.get(`/modules/${id}`),
   getAllModules: () => apiClient.get('/modules'),
   searchModules: (term) => apiClient.get('/modules/search', { params: { term } }),
@@ -151,12 +156,15 @@ export const moduleService = {
   // Actualización de estado
   updateModuleStatus: (id, status) => apiClient.patch(`/modules/${id}/status`, { status }),
 
+  // Marcar/desmarcar módulo como completado
+  markModuleAsCompleted: (id) => apiClient.post(`/modules/${id}/complete`),
+  unmarkModuleAsCompleted: (id) => apiClient.delete(`/modules/${id}/complete`),
+
   // Upload de recursos y archivos
   uploadModuleImage: (id, formData) => apiClient.post(`/modules/${id}/image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 };
-
 // Servicio de usuario
 export const userService = {
   getProfile: () => apiClient.get('/user/profile'),

@@ -47,6 +47,19 @@ public class ModuleController {
         return ResponseEntity.ok(modules);
     }
 
+    @GetMapping("/course/{courseId}/user")
+    @Operation(summary = "Obtener módulos por curso para usuario autenticado", description = "Devuelve todos los módulos de un curso con información de completado para el usuario actual")
+    public ResponseEntity<List<ModuleResponse>> getModulesByCourseForUser(@PathVariable Long courseId) {
+        try {
+            List<ModuleResponse> modules = moduleService.getModulesByCourseForUser(courseId);
+            return ResponseEntity.ok(modules);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
     @GetMapping("/search")
     @Operation(summary = "Buscar módulos", description = "Busca módulos por nombre o descripción")
     public ResponseEntity<List<ModuleResponse>> searchModules(@RequestParam String term) {
@@ -106,6 +119,30 @@ public class ModuleController {
             return ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/{id}/complete")
+    @Operation(summary = "Marcar módulo como completado", description = "Marca un módulo como completado para el usuario autenticado")
+    public ResponseEntity<Void> markModuleAsCompleted(@PathVariable Long id) {
+        try {
+            moduleService.markModuleAsCompleted(id);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    @DeleteMapping("/{id}/complete")
+    @Operation(summary = "Desmarcar módulo como completado", description = "Desmarca un módulo como completado para el usuario autenticado")
+    public ResponseEntity<Void> unmarkModuleAsCompleted(@PathVariable Long id) {
+        try {
+            moduleService.unmarkModuleAsCompleted(id);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
