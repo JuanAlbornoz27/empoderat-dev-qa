@@ -1,7 +1,17 @@
 {
+  "name": "empoderat",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "pm2 start ecosystem.config.js",
+    "start:prod": "pm2 start ecosystem.config.js --env production",
+    "stop": "pm2 stop all",
+    "logs": "pm2 logs",
+    "monit": "pm2 monit"
+  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2"
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "empoderat": "file:"
   }
 }

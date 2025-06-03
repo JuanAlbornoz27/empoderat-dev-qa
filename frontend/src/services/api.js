@@ -1,10 +1,23 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Determinar la URL base según el entorno
+const getBaseUrl = () => {
+  // Si se proporciona explícitamente una URL en las variables de entorno, usarla
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  // De lo contrario, usar la URL según el entorno
+  if (process.env.NODE_ENV === 'production') {
+    return 'http://104.248.58.255:8080/api';
+  }
+  // Por defecto, usar localhost
+  return 'http://localhost:8080/api';
+};
+
 
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   }
