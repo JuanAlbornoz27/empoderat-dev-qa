@@ -3,7 +3,7 @@ package com.empoderat;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-
+import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * Clase principal que inicia la aplicación Spring Boot.
  * Esta clase sirve como punto de entrada para la aplicación Empoderat.
@@ -16,6 +16,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  */
 @SpringBootApplication
 @EnableJpaAuditing // Habilita auditoría para entidades JPA (created_at, updated_at, etc.)
+@EnableScheduling
+
+
 public class EmpoderatApplication {
 
     /**

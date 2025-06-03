@@ -60,10 +60,14 @@ const MisCursos = () => {
     fetchMyCourses();
   }, [isAuthenticated, user, navigate]);
 
-  // Función para continuar con el curso - CORREGIDA
   const handleContinuar = (cursoId) => {
-    // Navegar usando parámetros de URL en lugar de state
-    navigate(`/curso/${cursoId}`);
+    console.log(`Continuando con el curso ID: ${cursoId}`);
+    // Buscar el curso seleccionado
+    const cursoSeleccionado = cursos.find(curso => curso.id === cursoId);
+
+    // Navegar a la página del curso con el ID correspondiente
+    // y pasar el curso como estado
+    navigate(`/curso/${cursoId}`, { state: { cursoSeleccionado } });
   };
 
   const handleRetry = () => {

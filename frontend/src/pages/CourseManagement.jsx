@@ -39,7 +39,7 @@ const CourseManagement = () => {
         description: '',
         categoryId: '',
         status: 'ACTIVE',
-        estimatedDuration: '10h', 
+        estimatedDuration: '10h',
         imageUrl: ''
     });
 
@@ -74,7 +74,7 @@ const CourseManagement = () => {
                 ];
                 setCategories(fallbackCategories);
                 if (fallbackCategories.length > 0) {
-                     setNewCourseData(prev => ({ ...prev, categoryId: fallbackCategories[0].id }));
+                    setNewCourseData(prev => ({ ...prev, categoryId: fallbackCategories[0].id }));
                 }
             }
         };
@@ -86,7 +86,7 @@ const CourseManagement = () => {
         // Extraer parámetros de la URL
         const queryParams = new URLSearchParams(window.location.search);
         const categoryParam = queryParams.get('category');
-        
+
         // Si existe un parámetro de categoría, establecer el filtro
         if (categoryParam) {
             setCategoryFilter(categoryParam);
@@ -106,7 +106,7 @@ const CourseManagement = () => {
             setSuccessMessage('');
 
             let response;
-             if (searchTerm) {
+            if (searchTerm) {
                 response = await courseService.searchCourses(searchTerm);
             } else if (categoryFilter !== 'all' && categories.length > 0) {
                 const categoryObject = categories.find(cat => cat.name === categoryFilter || cat.id === categoryFilter);
@@ -114,25 +114,26 @@ const CourseManagement = () => {
                 if (categoryIdToFilter) {
                     response = await courseService.getCoursesByCategory(categoryIdToFilter);
                 } else {
-                     response = await courseService.getAllCourses(); // Fallback si no se encuentra ID
+                    response = await courseService.getAllCourses(); // Fallback si no se encuentra ID
                 }
             }
-             else {
+            else {
                 response = await courseService.getAllCourses();
             }
 
             if (response && response.data) {
                 const formattedCourses = response.data.map(course => ({
                     id: course.id,
-                    name: course.name,
-                    status: course.status,
+                    name: course.title || course.name,
+                    status: course.status || 'ACTIVE',
                     description: course.description,
-                    categoryId: course.category?.id,
+                    category: course.category?.name || getCategoryNameById(course.categoryId) || 'Sin categoría',
                     categoryNameDirect: course.category?.name,
                     enrolledCount: course.enrolledCount || 0,
                     estimatedDuration: `${course.estimatedDuration || 0}h`,
-                    imageUrl: course.imageUrl,
-                    moduleCount: course.moduleCount || 0
+                    imageUrl: course.imageUrl || null,
+                    moduleCount: course.moduleCount || 0,
+                    activeModuleCount: course.activeModuleCount || 0
                 }));
 
                 let filteredCourses = formattedCourses;
@@ -148,7 +149,7 @@ const CourseManagement = () => {
                 setTotalElements(filteredCourses.length);
                 setTotalPages(Math.ceil(filteredCourses.length / pageSize));
             } else {
-                 throw new Error("No se recibieron datos de cursos o la respuesta no tiene el formato esperado.");
+                throw new Error("No se recibieron datos de cursos o la respuesta no tiene el formato esperado.");
             }
         } catch (err) {
             setError(`Error al cargar los cursos: ${err.message}. Usando datos mock.`);
@@ -176,7 +177,7 @@ const CourseManagement = () => {
             return {
                 id: course.id,
                 name: course.title,
-                status: 'ACTIVE', 
+                status: 'ACTIVE',
                 description: course.description,
                 categoryId: categoryObject.id,
                 category: categoryObject.name,
@@ -199,11 +200,11 @@ const CourseManagement = () => {
             filteredCourses = filteredCourses.filter(course => course.status === statusFilter);
         }
         if (categoryFilter !== 'all') {
-             const categoryObject = categories.find(cat => cat.name === categoryFilter || cat.id === categoryFilter);
-             const categoryIdToFilter = categoryObject ? categoryObject.id : null;
-             if (categoryIdToFilter) {
+            const categoryObject = categories.find(cat => cat.name === categoryFilter || cat.id === categoryFilter);
+            const categoryIdToFilter = categoryObject ? categoryObject.id : null;
+            if (categoryIdToFilter) {
                 filteredCourses = filteredCourses.filter(course => course.categoryId === categoryIdToFilter);
-             }
+            }
         }
 
         const startIndex = (currentPage - 1) * pageSize;
@@ -215,7 +216,7 @@ const CourseManagement = () => {
         setTotalPages(Math.ceil(filteredCourses.length / pageSize));
     };
 
-    const getCategoryFromTitle = (title) => { 
+    const getCategoryFromTitle = (title) => {
         const title_lower = title.toLowerCase();
         if (title_lower.includes('crochet') || title_lower.includes('bordado') || title_lower.includes('artesanía')) return 'Artes';
         if (title_lower.includes('cocina')) return 'Cocina';
@@ -253,7 +254,7 @@ const CourseManagement = () => {
             setEditingCourseData(prev => ({ ...prev, [name]: value }));
         }
     };
-    
+
     const handleSaveNewCourse = async () => {
         if (!newCourseData.name || !newCourseData.description || !newCourseData.categoryId) {
             setError('Nombre, descripción y categoría son requeridos.');
@@ -265,10 +266,10 @@ const CourseManagement = () => {
                 ...newCourseData,
                 estimatedDuration: parseInt(newCourseData.estimatedDuration.replace('h', ''), 10) || 0,
             };
-            const response = await courseService.createCourse(payload); 
+            const response = await courseService.createCourse(payload);
             if (response && response.data) {
                 setSuccessMessage('Curso creado exitosamente!');
-                loadCourses(); 
+                loadCourses();
                 handleCancelEdit();
             } else {
                 throw new Error("La creación del curso no devolvió datos.");
@@ -308,7 +309,7 @@ const CourseManagement = () => {
             const response = await courseService.updateCourse(editingCourseId, payload);
             if (response && response.data) {
                 setSuccessMessage('Curso actualizado exitosamente!');
-                loadCourses(); 
+                loadCourses();
                 handleCancelEdit();
             } else {
                 throw new Error("La actualización del curso no devolvió datos.");
@@ -326,7 +327,7 @@ const CourseManagement = () => {
             setSuccessMessage(''); setError(null);
             const categoryName = getCategoryNameById(newCategoryId);
             await courseService.updateCourse(courseId, { categoryId: newCategoryId });
-            
+
             setCourses(prevCourses =>
                 prevCourses.map(course =>
                     course.id === courseId ? { ...course, category: categoryName, categoryId: newCategoryId } : course
@@ -340,12 +341,12 @@ const CourseManagement = () => {
             setTimeout(() => setError(null), 3000);
         }
     };
-    
+
     // Manejador para eliminar un curso
     const handleDeleteCourse = async (courseId) => {
         const course = courses.find(c => c.id === courseId);
         const hasModules = course.moduleCount > 0;
-        
+
         let confirmMessage = '¿Está seguro de que desea eliminar este curso?';
         if (hasModules) {
             confirmMessage = `Este curso tiene ${course.moduleCount} módulo(s) asociado(s). ¿Está seguro de que desea eliminarlo? Esta acción también eliminará todos los módulos.`;
@@ -356,19 +357,19 @@ const CourseManagement = () => {
                 setSuccessMessage('');
                 setError(null);
                 await courseService.deleteCourse(courseId);
-                
+
                 setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
-                
+
                 const newTotalElements = totalElements - 1;
                 setTotalElements(newTotalElements);
                 setTotalPages(Math.ceil(newTotalElements / pageSize));
-                
+
                 if (courses.length === 1 && currentPage > 1) {
                     setCurrentPage(currentPage - 1);
                 } else if (courses.length === 1 && currentPage === 1 && newTotalElements === 0) {
                     loadCourses();
                 }
-                
+
                 setSuccessMessage('Curso eliminado exitosamente.');
                 setTimeout(() => setSuccessMessage(''), 3000);
             } catch (err) {
@@ -386,20 +387,20 @@ const CourseManagement = () => {
 
     const renderPagination = () => {
         const pages = [];
-        const maxVisiblePages = 5;  
+        const maxVisiblePages = 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
         if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
-        
+
         if (startPage > 1) {
             pages.push(
-                 <button key="1" onClick={() => setCurrentPage(1)} className="pagination-btn">1</button>
+                <button key="1" onClick={() => setCurrentPage(1)} className="pagination-btn">1</button>
             );
             if (startPage > 2) {
-                 pages.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
+                pages.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
             }
         }
 
@@ -414,19 +415,19 @@ const CourseManagement = () => {
                 </button>
             );
         }
-        
+
         if (endPage < totalPages) {
             if (endPage < totalPages - 1) {
-                 pages.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
+                pages.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
             }
             pages.push(
-                 <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className="pagination-btn">{totalPages}</button>
+                <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className="pagination-btn">{totalPages}</button>
             );
         }
         return pages;
     };
 
-    if (loading && !isAddingCourse && !editingCourseId) { 
+    if (loading && !isAddingCourse && !editingCourseId) {
         return (
             <div className="course-management">
                 <Header isLoggedIn={true} isAdmin={true} />
@@ -434,17 +435,17 @@ const CourseManagement = () => {
             </div>
         );
     }
-    
+
     return (
         <div className="course-management">
-            <Header 
-                    texto1="Categorías"
-                    texto2="Cursos"
-                    texto3="Módulos"
-                    texto4="Estadísticas"
-            
-            isLoggedIn={true} isAdmin={true} />
-            
+            <Header
+                texto1="Categorías"
+                texto2="Cursos"
+                texto3="Módulos"
+                texto4="Estadísticas"
+
+                isLoggedIn={true} isAdmin={true} />
+
             <main className="main-content">
                 <section className="content-container">
                     <h1 className="page-title">Gestión de Cursos</h1>
@@ -457,20 +458,20 @@ const CourseManagement = () => {
                         <button className="add-course-btn" type="button" onClick={handleAddCourseClick} disabled={isAddingCourse || editingCourseId}>
                             Añadir Curso
                         </button>
-                        
+
                         <div className="search-container">
-                            <input type="text" placeholder="Buscar Curso" value={searchTerm} onChange={handleSearch} className="search-input"/>
+                            <input type="text" placeholder="Buscar Curso" value={searchTerm} onChange={handleSearch} className="search-input" />
                             <i className="fas fa-search search-icon"></i>
                         </div>
-                        
+
                         <div className="filter-controls">
-                            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1);}} className="filter-select">
+                            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className="filter-select">
                                 <option value="all">Todos los estados</option>
                                 <option value="ACTIVE">Activo</option>
                                 <option value="INACTIVE">Inactivo</option>
                             </select>
-                            
-                            <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1);}} className="filter-select">
+
+                            <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }} className="filter-select">
                                 <option value="all">Todas las categorías</option>
                                 {categories.map(category => (
                                     <option key={category.id || category.name} value={category.id || category.name}>
@@ -505,20 +506,20 @@ const CourseManagement = () => {
                                             <button className="action-btn cancel-btn" title="Cancelar" onClick={handleCancelEdit}><i className="fas fa-times"></i></button>
                                         </td>
                                         <td>NUEVO</td>
-                                        <td><input type="text" name="name" value={newCourseData.name} onChange={(e) => handleInputChange(e, 'new')} placeholder="Nombre del curso" className="edit-input"/></td>
+                                        <td><input type="text" name="name" value={newCourseData.name} onChange={(e) => handleInputChange(e, 'new')} placeholder="Nombre del curso" className="edit-input" /></td>
                                         <td>
                                             <select name="status" value={newCourseData.status} onChange={(e) => handleInputChange(e, 'new')} className="edit-select">
                                                 <option value="ACTIVE">Activo</option>
                                                 <option value="INACTIVE">Inactivo</option>
                                             </select>
                                         </td>
-                                        <td><textarea name="description" value={newCourseData.description} onChange={(e) => handleInputChange(e, 'new')} placeholder="Descripción" className="edit-textarea"/></td>
+                                        <td><textarea name="description" value={newCourseData.description} onChange={(e) => handleInputChange(e, 'new')} placeholder="Descripción" className="edit-textarea" /></td>
                                         <td>
                                             {editingCourseId === course.id ? (
-                                                <select 
-                                                    name="categoryId" 
-                                                    value={editingCourseData.categoryId} 
-                                                    onChange={(e) => handleInputChange(e, 'edit')} 
+                                                <select
+                                                    name="categoryId"
+                                                    value={editingCourseData.categoryId}
+                                                    onChange={(e) => handleInputChange(e, 'edit')}
                                                     className="edit-select"
                                                 >
                                                     <option value="">Seleccione categoría</option>
@@ -529,21 +530,21 @@ const CourseManagement = () => {
                                                     ))}
                                                 </select>
                                             ) : (
-                                            <span className="category-display">
-                                                {/* Use the direct name if available; otherwise, try lookup or show 'Sin categoría' */}
-                                                {course.categoryNameDirect || (course.categoryId ? getCategoryNameById(course.categoryId) : 'Sin categoría')}
-                                            </span>
+                                                <span className="category-display">
+                                                    {/* Use the direct name if available; otherwise, try lookup or show 'Sin categoría' */}
+                                                    {course.categoryNameDirect || (course.categoryId ? getCategoryNameById(course.categoryId) : 'Sin categoría')}
+                                                </span>
                                             )}
                                         </td>
                                         <td><span className="text-center">-</span></td> {/* Inscritos no editable al crear */}
-                                        <td><input type="text" name="estimatedDuration" value={newCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'new')} placeholder="Ej: 20h" className="edit-input short-input"/></td>
-                                        <td><input type="text" name="imageUrl" value={newCourseData.imageUrl} onChange={(e) => handleInputChange(e, 'new')} placeholder="URL de imagen" className="edit-input"/></td>
+                                        <td><input type="text" name="estimatedDuration" value={newCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'new')} placeholder="Ej: 20h" className="edit-input short-input" /></td>
+                                        <td><input type="text" name="imageUrl" value={newCourseData.imageUrl} onChange={(e) => handleInputChange(e, 'new')} placeholder="URL de imagen" className="edit-input" /></td>
                                         <td><span className="text-center">-</span></td> {/* Módulos no gestionables al crear */}
                                     </tr>
                                 )}
 
                                 {courses.length === 0 && !isAddingCourse ? (
-                                    <tr><td colSpan="10" style={{textAlign: 'center', padding: '2rem'}}>No se encontraron cursos</td></tr>
+                                    <tr><td colSpan="10" style={{ textAlign: 'center', padding: '2rem' }}>No se encontraron cursos</td></tr>
                                 ) : (
                                     courses.map((course) => (
                                         editingCourseId === course.id ? (
@@ -553,37 +554,37 @@ const CourseManagement = () => {
                                                     <button className="action-btn cancel-btn" title="Cancelar Edición" onClick={handleCancelEdit}><i className="fas fa-times"></i></button>
                                                 </td>
                                                 <td>{course.id}</td>
-                                                <td><input type="text" name="name" value={editingCourseData.name} onChange={(e) => handleInputChange(e, 'edit')} className="edit-input"/></td>
+                                                <td><input type="text" name="name" value={editingCourseData.name} onChange={(e) => handleInputChange(e, 'edit')} className="edit-input" /></td>
                                                 <td>
                                                     <select name="status" value={editingCourseData.status} onChange={(e) => handleInputChange(e, 'edit')} className="edit-select">
                                                         <option value="ACTIVE">Activo</option>
                                                         <option value="INACTIVE">Inactivo</option>
                                                     </select>
                                                 </td>
-                                                <td><textarea name="description" value={editingCourseData.description} onChange={(e) => handleInputChange(e, 'edit')} className="edit-textarea"/></td>
+                                                <td><textarea name="description" value={editingCourseData.description} onChange={(e) => handleInputChange(e, 'edit')} className="edit-textarea" /></td>
                                                 <td>
                                                     <select name="categoryId" value={editingCourseData.categoryId} onChange={(e) => handleInputChange(e, 'edit')} className="edit-select">
-                                                         <option value="">Seleccione categoría</option>
+                                                        <option value="">Seleccione categoría</option>
                                                         {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                                                     </select>
                                                 </td>
                                                 <td className="text-center">{course.enrolledCount}</td>
-                                                <td><input type="text" name="estimatedDuration" value={editingCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'edit')} className="edit-input short-input"/></td>
+                                                <td><input type="text" name="estimatedDuration" value={editingCourseData.estimatedDuration} onChange={(e) => handleInputChange(e, 'edit')} className="edit-input short-input" /></td>
                                                 <td>
                                                     <div className="image-container">
-                                                        <input type="text" name="imageUrl" value={editingCourseData.imageUrl} onChange={(e) => handleInputChange(e, 'edit')} placeholder="URL de imagen" className="edit-input"/>
+                                                        <input type="text" name="imageUrl" value={editingCourseData.imageUrl} onChange={(e) => handleInputChange(e, 'edit')} placeholder="URL de imagen" className="edit-input" />
                                                         {/* Opcional: Botón de subida aquí también, pero más complejo */}
                                                     </div>
                                                 </td>
                                                 <td className="text-center">
-                                                     <a href={`/admin/modules/course/${course.id}`} className="modules-link">Ver ({course.moduleCount || 0})</a>
+                                                    <a href={`/admin/modules/course/${course.id}`} className="modules-link">Ver ({course.moduleCount || 0})</a>
                                                 </td>
                                             </tr>
                                         ) : (
                                             <tr key={course.id}>
                                                 <td className="actions-cell">
                                                     {/* <button className="action-btn info-btn" title="Ver información"><i className="fas fa-info"></i></button> */}
-                                                    <button className="action-btn edit-btn" title="Editar curso" onClick={() => handleEditCourseClick(course)}  disabled={isAddingCourse || editingCourseId}><i className="fas fa-pencil-alt"></i></button>
+                                                    <button className="action-btn edit-btn" title="Editar curso" onClick={() => handleEditCourseClick(course)} disabled={isAddingCourse || editingCourseId}><i className="fas fa-pencil-alt"></i></button>
                                                     <button className="action-btn " title="Eliminar curso" onClick={() => handleDeleteCourse(course.id)} disabled={isAddingCourse || editingCourseId}><i className="fas fa-trash"></i></button>
                                                 </td>
                                                 <td>{course.id}</td>
@@ -605,10 +606,10 @@ const CourseManagement = () => {
                                                 <td className="text-center">{course.estimatedDuration}</td>
                                                 <td className="image-cell">
                                                     <div className="image-container">
-                                                        <input type="text" placeholder="img.png" value={course.imageUrl || ''} readOnly className="image-input"/>
+                                                        <input type="text" placeholder="img.png" value={course.imageUrl || ''} readOnly className="image-input" />
                                                         <label className="upload-btn" title="Subir imagen">
                                                             <input type="file" accept="image/*" style={{ display: 'none' }}
-                                                                onChange={(e) => { if (e.target.files[0]) { handleImageUpload(course.id, e.target.files[0]); }}}
+                                                                onChange={(e) => { if (e.target.files[0]) { handleImageUpload(course.id, e.target.files[0]); } }}
                                                                 disabled={isAddingCourse || editingCourseId}
                                                             />
                                                             <i className="fas fa-upload"></i>
@@ -633,7 +634,7 @@ const CourseManagement = () => {
                         </div>
                         <div className="results-info">
                             Resultado {totalElements > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements}
-                            </div>
+                        </div>
                     </div>
                 </section>
             </main>

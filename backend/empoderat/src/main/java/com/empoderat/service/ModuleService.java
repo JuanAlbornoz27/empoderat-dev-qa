@@ -11,7 +11,9 @@ import com.empoderat.repository.mysql.UserRepository;
 import com.empoderat.util.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ public class ModuleService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
+    @Autowired
+    private EventService eventService;
 
     public List<ModuleResponse> getAllModules() {
         return moduleRepository.findAll().stream()
@@ -176,6 +180,8 @@ public class ModuleService {
             currentUser.getCompletedModules().add(module);
             userRepository.save(currentUser);
         }
+        // Notificar el evento de módulo completado
+        eventService.onModuleCompleted(currentUser.getId(), moduleId);
     }
 
     /**

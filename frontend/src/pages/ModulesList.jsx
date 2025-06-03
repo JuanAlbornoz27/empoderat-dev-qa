@@ -260,7 +260,7 @@ const ModulesList = () => {
                 )}
               </div>
 
-              f
+              
             </div>
           )}
         </div>

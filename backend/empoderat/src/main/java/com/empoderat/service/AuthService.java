@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.Base64;
 
@@ -40,6 +40,8 @@ public class AuthService {
 
     @Value("${keycloak.credentials.secret}")
     private String clientSecret;
+    @Autowired
+    private EventService eventService;
 
     private String getTokenUrl() {
         return keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
@@ -74,7 +76,6 @@ public class AuthService {
                 // Decodificar JWT para obtener información del usuario
                 String accessToken = tokenResponse.get("access_token").asText();
                 JsonNode userInfo = decodeJWT(accessToken);
-                
 
                 return AuthResponse.builder()
                         .accessToken(accessToken)
@@ -121,8 +122,10 @@ public class AuthService {
                     .build();
 
             userRepository.save(user);
-            log.info("Usuario guardado en MySQL con ID: {}", user.getId());
 
+            log.info("Usuario guardado en MySQL con ID: {}", user.getId());
+            // Notificar el evento de registroAdd commentMore actions
+            eventService.onUserRegistered(user.getId());
             return keycloakId;
         } catch (Exception e) {
             log.error("Error en registro: ", e);
