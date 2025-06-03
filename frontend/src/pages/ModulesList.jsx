@@ -66,11 +66,17 @@ const ModulesList = () => {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const currentIndex = allModules.findIndex(m => m.id === parseInt(moduleId));
     const nextModule = allModules[currentIndex + 1];
 
+    // Marcar el módulo actual como completado si no lo está
+    if (!completed) {
+      await handleMarkAsCompleted();
+    }
+
     if (nextModule) {
+      // Si hay un siguiente módulo, navegar a él
       navigate('/modulos', {
         state: {
           courseId,
@@ -82,8 +88,12 @@ const ModulesList = () => {
         }
       });
     } else {
-      // Si no hay más módulos, volver al curso
-      navigate(`/curso/${courseId}`);
+      alert('¡Felicitaciones! Has completado todos los módulos del curso.');
+       navigate(`/mis-cursos`, {
+        state: {
+          courseCompleted: true
+        }
+      });
     }
   };
 
@@ -179,11 +189,13 @@ const ModulesList = () => {
             <h2>{moduleName}</h2>
             <div className="module-progress-info">
               <span>Módulo {getCurrentModuleIndex()} de {allModules.length}</span>
-              {completed ? (
+              <br />
+              {/* {completed ? (
+
                 <span className="completed-badge">✓ Completado</span>
               ) : (
                 <span className="pending-badge">Pendiente</span>
-              )}
+              )} */}
             </div>
           </div>
           <button
@@ -248,15 +260,7 @@ const ModulesList = () => {
                 )}
               </div>
 
-              {/* Botón para marcar como completado */}
-              {!completed && (
-                <button
-                  className="complete-module-btn"
-                  onClick={handleMarkAsCompleted}
-                >
-                  Marcar como completado
-                </button>
-              )}
+              f
             </div>
           )}
         </div>
@@ -277,15 +281,19 @@ const ModulesList = () => {
 
             <button
               className="next-btn"
-              onClick={handleNext}
-              disabled={getCurrentModuleIndex() === allModules.length}
+              onClick={() => {
+                handleNext();
+                handleMarkAsCompleted();
+              }}
+              disabled={getCurrentModuleIndex() === allModules.length && completed}
             >
-              {getCurrentModuleIndex() === allModules.length ? 'Finalizar' : 'Siguiente'} →
+              {getCurrentModuleIndex() === allModules.length ? 'Finalizar curso' : 'Siguiente'} →
             </button>
           </div>
         </div>
       </div>
     </div>
+
   );
 };
 

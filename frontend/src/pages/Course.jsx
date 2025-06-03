@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/HeaderLearner';
 import { moduleService, courseService } from '../services/api';
 import '../styles/CourseLearner.css';
@@ -7,6 +7,8 @@ import '../styles/CourseLearner.css';
 const Curso = () => {
   const { cursoId } = useParams(); // Cambiado de courseId a cursoId para coincidir con la ruta
   const navigate = useNavigate();
+  const location = useLocation();
+  const courseCompleted = location.state?.courseCompleted;
   const [course, setCourse] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,8 @@ const Curso = () => {
       fetchCourseData();
     }
   }, [cursoId]);
+
+
 
   const fetchCourseData = async () => {
     try {
@@ -160,12 +164,12 @@ const Curso = () => {
       />
       <div className="curso-detalle-card">
         <h1 className="mis-cursos-titulo">Mis cursos</h1>
-        
+
         <div className="curso-actual">
           <div className="curso-actual-imagen">
-            <img 
-              src={course.imageUrl || "/api/placeholder/300/200"} 
-              alt={course.name || course.title || "Curso"} 
+            <img
+              src={course.imageUrl || "/api/placeholder/300/200"}
+              alt={course.name || course.title || "Curso"}
             />
           </div>
           <div className="curso-actual-info">
@@ -183,8 +187,8 @@ const Curso = () => {
                 <span>({modules.filter(m => m.completed).length}/{modules.length} módulos completados)</span>
               </div>
               <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
+                <div
+                  className="progress-fill"
                   style={{ width: `${getCourseProgress()}%` }}
                 ></div>
               </div>
@@ -209,8 +213,8 @@ const Curso = () => {
               modules.map((module) => (
                 <div key={module.id} className="modulo-card">
                   <div className="modulo-imagen">
-                    <img 
-                      src={module.imageUrl || "/api/placeholder/150/100"} 
+                    <img
+                      src={module.imageUrl || "/api/placeholder/150/100"}
                       alt={module.name}
                     />
                     <div className="modulo-status">
