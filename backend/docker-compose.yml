@@ -7,13 +7,19 @@ services:
     ports:
       - "8180:8080"
     environment:
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HOSTNAME_STRICT=false
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-      - KC_DB=dev-file
-      # Ya no es necesario preview ni scripts ni authorization
+      - KC_HOSTNAME_STRICT_BACKCHANNEL= "false"
     command:
       - start-dev
       - --import-realm
+      - --http-enabled=true
+      - --hostname-strict=false
+      - --hostname-strict-https=false
+      - --hostname-strict-backchannel=false
     volumes:
       - keycloak_data:/opt/keycloak/data
       # Monta tu JSON limpio (sin authorizationSettings)

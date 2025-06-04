@@ -1,91 +1,85 @@
+// ecosystem.config.js (Producción – Ubuntu)
 module.exports = {
   apps: [
-    // Docker compose (Este parece estar funcionando bien)
+    // Backend Spring Boot (Producción)
     {
-      name: 'empoderat-containers',
-      script: 'docker-compose', // PM2 debería encontrar docker-compose si está en el PATH
-      args: 'up',
-      cwd: './backend/empoderat', // Asegúrate que docker-compose.yml está aquí
-      interpreter: 'none',
-      env: {
-        NODE_ENV: 'development'
-      },
-      env_production: {
-        NODE_ENV: 'production'
-      },
-      // Las rutas de log son relativas al CWD de este proceso si PM2 no puede crearlas donde se especifica,
-      // o relativas a donde ejecutas 'pm2 start'.
-      // Es buena idea crear la carpeta './logs' en la raíz de tu proyecto manualmente primero.
-      error_file: './logs/docker-error.log',
-      out_file: './logs/docker-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      kill_timeout: 5000
-      // Eliminamos 'wait_ready' y 'listen_timeout' para docker-compose
-    },
-
-    // Backend Spring Boot - Usando cmd.exe para mayor fiabilidad en Windows
-    {
-      name: 'empoderat-api',
-      script: 'cmd.exe',
-      args: ['/c', '.\\mvnw.cmd spring-boot:run'], // Comando completo como un solo argumento para /c después de cmd.exe
-      // Asegúrate que mvnw.cmd está en cwd
+      name: 'api-prod',
       cwd: './backend/empoderat',
-      interpreter: 'none', // 'none' porque el script es cmd.exe
-      env: {
-        NODE_ENV: 'development',
-        SPRING_PROFILES_ACTIVE: 'dev',
-        // Si Spring Boot necesita un puerto diferente a 8080 (usado por Keycloak):
-        // SERVER_PORT: 8081 // O configúralo en application.properties
-      },
+      script: './mvnw',
+      args: 'spring-boot:run',
+      interpreter: 'bash',
+      instances: 1,
+      exec_mode: 'fork',
+      max_memory_restart: '1G',
+      restart_delay: 5000,
+      max_restarts: 5,
+      autorestart: true,
+      watch: false,
       env_production: {
         NODE_ENV: 'production',
         SPRING_PROFILES_ACTIVE: 'prod',
-        SERVER_PORT: 8081, // Asegúrate que este puerto no entre en conflicto
-        MYSQL_URL: 'jdbc:mysql://localhost:3306/empoderat',
-        MYSQL_USER: 'root',
-        MYSQL_PASSWORD: 'root',
-        MONGODB_URI: 'mongodb+srv://root:root@empoderat.cwi1qm7.mongodb.net/empoderat',
-        NEO4J_URI: 'bolt://localhost:7687',
-        NEO4J_USER: 'neo4j',
-        NEO4J_PASSWORD: 'password',
-        KEYCLOAK_URL: 'http://localhost:8180' // Asumiendo que Keycloak para el backend es el que corre en Docker en 8080, pero el proxy podría ser 8180. Ajusta si es necesario.
-        // Si Keycloak está en Docker en 8080, y este API se comunica con él, debería ser http://localhost:8080
+        SERVER_PORT: '8080',
+        JAVA_HOME: '/usr/lib/jvm/java-17-openjdk-amd64',
+        PATH: '/usr/lib/jvm/java-17-openjdk-amd64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+        
+        // === MySQL ===
+        SPRING_DATASOURCE_MYSQL_JDBC_URL: 'jdbc:mysql://104.248.58.255:3306/empoderat?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true',
+        SPRING_DATASOURCE_MYSQL_USERNAME: 'migrador',
+        SPRING_DATASOURCE_MYSQL_PASSWORD: 'migrador',
+        SPRING_DATASOURCE_MYSQL_DRIVER_CLASS_NAME: 'com.mysql.cj.jdbc.Driver',
+        
+        // === MongoDB ===
+        SPRING_DATA_MONGODB_URI: 'mongodb+srv://root:root@empoderat.cwi1qm7.mongodb.net/empoderat?retryWrites=true&w=majority&appName=EmpoderaT',
+        
+        // === Neo4j ===
+        SPRING_NEO4J_URI: 'bolt://104.248.58.255:7687',
+        SPRING_NEO4J_AUTHENTICATION_USERNAME: 'neo4j',
+        SPRING_NEO4J_AUTHENTICATION_PASSWORD: 'password',
+        
+        // === JWT Configuration ===
+        JWT_SECRET: 'TuClaveSecretaProductionMuyLargaYSegura2024!@#$%^&*()_+=EmpoderaT_JWT_SECRET_KEY',
+        JWT_EXPIRATION: '86400000',
+        
+        // === Keycloak ===
+        KEYCLOAK_URL: 'http://104.248.58.255:8180',
+        KEYCLOAK_CLIENT_SECRET: 'lA4VaiKZKaBtAz9T8YJcBIbRDU80p8oG',
+        
+        // === CORS ===
+        CORS_ALLOWED_ORIGINS: 'http://104.248.58.255:5173,http://localhost:5173',
+        
+        // === URLs ===
+        APP_BASE_URL: 'http://104.248.58.255:8080',
+        APP_UPLOAD_DIR: '/app/uploads'
       },
-      instances: 1,
-      exec_mode: 'fork',
-      watch: false,
       merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       error_file: './logs/backend-error.log',
       out_file: './logs/backend-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      start_delay: 20000 // Aumentado ligeramente para dar más tiempo a Docker si es necesario
+      time: true
     },
-
-    // Frontend (Vite) - Usando cmd.exe para mayor fiabilidad
+    
+    // Frontend (Producción)
     {
-      name: 'empoderat-frontend',
+      name: 'frontend-prod',
       cwd: './frontend',
-      script: 'cmd.exe',
-      args: ['/c', 'npm run dev'], // npm debería resolverse a npm.cmd a través del PATH del sistema
-      interpreter: 'none', // 'none' porque el script es cmd.exe
-      env: {
-        NODE_ENV: 'development',
-        // Si tu API Spring Boot corre en 8081:
-        // VITE_API_URL: 'http://localhost:8081/api'
-        // Si tu API es Keycloak directamente (lo cual es menos probable para una VITE_API_URL general):
-        VITE_API_URL: 'http://localhost:8080/api' // Mantén esto si el frontend habla directamente con un gateway/Keycloak en 8080. Ajusta según tu arquitectura.
-      },
-      env_production: {
-        NODE_ENV: 'production',
-        VITE_API_URL: 'http://104.248.58.255:8080/api' // O el puerto correspondiente si cambia
-      },
+      script: 'npm',
+      args: 'run preview -- --port 5173 --host 0.0.0.0',
+      watch: false,
       instances: 1,
       exec_mode: 'fork',
+      max_memory_restart: '512M',
+      restart_delay: 3000,
+      max_restarts: 5,
       autorestart: true,
-      watch: false,
+      env_production: {
+        NODE_ENV: 'production',
+        VITE_API_URL: 'http://104.248.58.255:8080/api'
+      },
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       error_file: './logs/frontend-error.log',
       out_file: './logs/frontend-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
+      time: true
     }
   ]
 };
