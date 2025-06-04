@@ -514,7 +514,7 @@ const CourseManagement = () => {
                                         </td>
                                         <td><textarea name="description" value={newCourseData.description} onChange={(e) => handleInputChange(e, 'new')} placeholder="Descripción" className="edit-textarea"/></td>
                                         <td>
-                                            {editingCourseId === course.id ? (
+                                            {editingCourseId === courses.id ? (
                                                 <select 
                                                     name="categoryId" 
                                                     value={editingCourseData.categoryId} 
@@ -531,7 +531,7 @@ const CourseManagement = () => {
                                             ) : (
                                             <span className="category-display">
                                                 {/* Use the direct name if available; otherwise, try lookup or show 'Sin categoría' */}
-                                                {course.categoryNameDirect || (course.categoryId ? getCategoryNameById(course.categoryId) : 'Sin categoría')}
+                                                {courses.categoryNameDirect || (courses.categoryId ? getCategoryNameById(courses.categoryId) : 'Sin categoría')}
                                             </span>
                                             )}
                                         </td>

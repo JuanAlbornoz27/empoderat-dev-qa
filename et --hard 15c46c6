@@ -1,0 +1,98 @@
+[33me644327[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkatlyn[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33me644327[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkatlyn[m[33m)[m HEAD@{1}: checkout: moving from develop to katlyn
+[33mdad80b2[m[33m ([m[1;32mdevelop[m[33m)[m HEAD@{2}: checkout: moving from katlyn to develop
+[33me644327[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkatlyn[m[33m)[m HEAD@{3}: commit (merge): Merge branch 'develop' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into katlyn
+[33m15c46c6[m HEAD@{4}: checkout: moving from develop to katlyn
+[33mdad80b2[m[33m ([m[1;32mdevelop[m[33m)[m HEAD@{5}: commit (merge): Merge branch 'develop' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into develop
+[33mcc83336[m HEAD@{6}: checkout: moving from main to develop
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{7}: checkout: moving from juan to main
+[33mfe1df2d[m[33m ([m[1;31morigin/juan[m[33m, [m[1;32mjuan[m[33m)[m HEAD@{8}: checkout: moving from katlyn to juan
+[33m15c46c6[m HEAD@{9}: reset: moving to HEAD
+[33m15c46c6[m HEAD@{10}: commit (merge): Merge branch 'develop' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into katlyn
+[33m833c25e[m HEAD@{11}: reset: moving to HEAD
+[33m833c25e[m HEAD@{12}: checkout: moving from develop to katlyn
+[33mcc83336[m HEAD@{13}: commit (merge): Merge branch 'develop' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into develop
+[33m79225d7[m HEAD@{14}: checkout: moving from juan to develop
+[33mfe1df2d[m[33m ([m[1;31morigin/juan[m[33m, [m[1;32mjuan[m[33m)[m HEAD@{15}: pull: Fast-forward
+[33mb112840[m HEAD@{16}: checkout: moving from katlyn to juan
+[33m833c25e[m HEAD@{17}: commit (merge): Merge branch 'juan' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into katlyn
+[33m56a9d98[m HEAD@{18}: reset: moving to HEAD
+[33m56a9d98[m HEAD@{19}: commit (merge): Merge branch 'juan' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into katlyn
+[33mc7d2bd6[m HEAD@{20}: commit (merge): Merge branch 'juan' into katlyn
+[33m7287f09[m HEAD@{21}: checkout: moving from juan to katlyn
+[33mb112840[m HEAD@{22}: pull origin juan: Fast-forward
+[33mc192064[m HEAD@{23}: checkout: moving from katlyn to juan
+[33m7287f09[m HEAD@{24}: commit (merge): Merge branch 'mafe' into katlyn
+[33mcd28c29[m[33m ([m[1;31morigin/katlyn[m[33m)[m HEAD@{25}: checkout: moving from mafe to katlyn
+[33m8b58422[m[33m ([m[1;32mmafe[m[33m)[m HEAD@{26}: pull origin mafe: Fast-forward
+[33m63f83ce[m HEAD@{27}: checkout: moving from katlyn to mafe
+[33mcd28c29[m[33m ([m[1;31morigin/katlyn[m[33m)[m HEAD@{28}: checkout: moving from main to katlyn
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{29}: checkout: moving from mafe to main
+[33m63f83ce[m HEAD@{30}: checkout: moving from katlyn to mafe
+[33mcd28c29[m[33m ([m[1;31morigin/katlyn[m[33m)[m HEAD@{31}: checkout: moving from mafe to katlyn
+[33m63f83ce[m HEAD@{32}: checkout: moving from katlyn to mafe
+[33mcd28c29[m[33m ([m[1;31morigin/katlyn[m[33m)[m HEAD@{33}: commit: cambios en gestión de cursos
+[33m057b5d5[m HEAD@{34}: commit: corrigiendo redireccionamiento hacia los modulos del curso
+[33m63f83ce[m HEAD@{35}: merge mafe: Fast-forward
+[33mdc118a6[m HEAD@{36}: checkout: moving from mafe to katlyn
+[33m63f83ce[m HEAD@{37}: pull origin mafe: Fast-forward
+[33mdc118a6[m HEAD@{38}: checkout: moving from katlyn to mafe
+[33mdc118a6[m HEAD@{39}: pull origin mafe: Fast-forward
+[33m37f584e[m HEAD@{40}: checkout: moving from mafe to katlyn
+[33mdc118a6[m HEAD@{41}: commit: cambios en back de gestión de cursos
+[33mcc0b8a5[m HEAD@{42}: commit: correciones en la gestión de cursos
+[33m6a36fd8[m HEAD@{43}: pull origin mafe: Fast-forward
+[33m37f584e[m HEAD@{44}: checkout: moving from juan to mafe
+[33mc192064[m HEAD@{45}: checkout: moving from mafe to juan
+[33m37f584e[m HEAD@{46}: checkout: moving from katlyn to mafe
+[33m37f584e[m HEAD@{47}: merge mafe: Fast-forward
+[33m33c1cd6[m HEAD@{48}: checkout: moving from mafe to katlyn
+[33m37f584e[m HEAD@{49}: pull origin mafe: Fast-forward
+[33m5c35719[m HEAD@{50}: reset: moving to HEAD
+[33m5c35719[m HEAD@{51}: checkout: moving from katlyn to mafe
+[33m33c1cd6[m HEAD@{52}: commit: conexión back y front de cursos
+[33me988ff7[m HEAD@{53}: checkout: moving from mafe to katlyn
+[33m5c35719[m HEAD@{54}: checkout: moving from katlyn to mafe
+[33me988ff7[m HEAD@{55}: commit (merge): Merge branch 'mafe' of https://github.com/JuanAlbornoz27/empoderat-dev-qa into katlyn
+[33m8bceb94[m HEAD@{56}: commit: commit de prueba
+[33m60781d2[m HEAD@{57}: commit: botón de cerrar sesión funcional
+[33ma1ef948[m HEAD@{58}: pull origin juan: Fast-forward
+[33m8c1fae0[m HEAD@{59}: pull origin juan: Fast-forward
+[33m3e22d0a[m HEAD@{60}: reset: moving to origin/katlyn
+[33m8c1fae0[m HEAD@{61}: pull origin juan: Fast-forward
+[33m3e22d0a[m HEAD@{62}: commit: insercion de usuarios en bd
+[33mc192064[m HEAD@{63}: merge juan: Fast-forward
+[33m18fc69b[m HEAD@{64}: checkout: moving from juan to katlyn
+[33mc192064[m HEAD@{65}: pull origin juan: Fast-forward
+[33m18fc69b[m HEAD@{66}: reset: moving to HEAD
+[33m18fc69b[m HEAD@{67}: checkout: moving from katlyn to juan
+[33m18fc69b[m HEAD@{68}: pull origin juan: Fast-forward
+[33m6801833[m HEAD@{69}: checkout: moving from juan to katlyn
+[33m18fc69b[m HEAD@{70}: pull origin juan: Fast-forward
+[33mdc90fce[m HEAD@{71}: checkout: moving from main to juan
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{72}: checkout: moving from katlyn to main
+[33m6801833[m HEAD@{73}: checkout: moving from Karen to katlyn
+[33mb2b663c[m[33m ([m[1;31morigin/Karen[m[33m, [m[1;32mKaren[m[33m)[m HEAD@{74}: checkout: moving from develop to Karen
+[33m79225d7[m HEAD@{75}: commit: clases del backend
+[33m957e42d[m HEAD@{76}: pull: Fast-forward
+[33mcb46e78[m HEAD@{77}: commit: fusionando cambios 2
+[33m8b2a32b[m HEAD@{78}: commit (merge): Merge remote-tracking branch 'origin/Karen' into develop
+[33m0fb745f[m HEAD@{79}: commit: arreglando errores
+[33m2911e9a[m HEAD@{80}: commit: cambios
+[33m9f9b7dd[m HEAD@{81}: commit: fusionando
+[33m5f874ce[m HEAD@{82}: commit (merge): Merge remote-tracking branch 'origin/mafe' into develop
+[33m53e2a0d[m HEAD@{83}: reset: moving to HEAD
+[33m53e2a0d[m HEAD@{84}: commit: edicion nombre de gestion de modulos
+[33m6801833[m HEAD@{85}: reset: moving to HEAD
+[33m6801833[m HEAD@{86}: merge katlyn: Fast-forward
+[33m7a6929f[m HEAD@{87}: checkout: moving from main to develop
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{88}: checkout: moving from develop to main
+[33m7a6929f[m HEAD@{89}: checkout: moving from katlyn to develop
+[33m6801833[m HEAD@{90}: commit: gestion categorias, cursos y modulos
+[33mc77d1bd[m HEAD@{91}: merge origin/juan: Fast-forward
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{92}: checkout: moving from main to katlyn
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{93}: checkout: moving from katlyn to main
+[33mc77d1bd[m HEAD@{94}: reset: moving to HEAD
+[33mc77d1bd[m HEAD@{95}: merge origin/juan: Fast-forward
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{96}: checkout: moving from main to katlyn
+[33me809310[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{97}: clone: from https://github.com/JuanAlbornoz27/empoderat-dev-qa.git

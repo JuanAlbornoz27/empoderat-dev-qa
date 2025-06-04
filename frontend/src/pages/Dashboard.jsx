@@ -7,6 +7,8 @@ import { courseService } from '../services/api';
 import '../styles/Dashboard.css';
 import mottoImage from '../assets/motto-image.png';
 import Footer from '../components/Footer';
+import { mockCourses } from '../data/mockCourses';
+
 
 const Dashboard = () => {
     const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
@@ -39,8 +41,9 @@ const Dashboard = () => {
         try {
             setLoading(true);
             setError(null);
-            const coursesResponse = await courseService.getAllCourses();
-            setCourses(coursesResponse.data || []);
+            // const coursesResponse = await courseService.getAllCourses();
+            // setCourses(coursesResponse.data || []);
+            setCourses(mockCourses);
         } catch (error) {
             console.error('Error loading courses:', error);
             setError('Error al cargar los cursos');
